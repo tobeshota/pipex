@@ -3,21 +3,30 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: toshota <toshota@student.42.fr>            +#+  +:+       +#+        */
+/*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/14 20:10:11 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/15 23:10:21 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <unistd.h>
+#include "libft/libft.h"
 
 // char **envpによって環境変数を受け取ることができる
 int main(int argc, char **argv, char **envp)
 {
-	pid_t num;
+	char **bin_path;
 
-	;
+	// コマンドライン引数が適切であるかを確かめる
+	check_arg(argc, argv);
+		// コマンドライン引数の数は5個以上あるかを確かめる
+		// ファイルが適切であるかを確かめる
+			// 入力用ファイルは読み取り可能であり，かつ，ディレクトリでないかを確かめる
+			// 出力用ファイルは書き込み可能であり，かつ，ディレクトリでないかを確かめる
+	// 環境変数のポインタenvpからbin_pathを取得する
+	get_bin_path(&bin_path, envp);
+	// pipexとしての処理をする
+	pipex(argc, argv, envp, bin_path);
 }
 
 /* やる
