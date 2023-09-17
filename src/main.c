@@ -6,13 +6,47 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/15 23:10:21 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/17 09:47:59 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft/libft.h"
+// gcc main.c ../libft/libft.a && ./a.out
+#include "../libft/libft.h"
+#include "../pipex.h"
+
+void put_error(char *err_msg)
+{
+	write(STDERR_FILENO, err_msg, ft_strlen(err_msg));
+	exit(1);
+}
+
+void check_argc(int argc)
+{
+	if(argc < 5)
+		put_error(TOO_FEW_ARGC_ERROR);
+}
+
+// ファイルが適切であるかを確かめる
+	// 入力用ファイルは読み取り可能であり，かつ，ディレクトリでないかを確かめる
+	// 出力用ファイルは書き込み可能であり，また存在しており，かつ，ディレクトリでないかを確かめる
+void check_argv(int argc, char **argv)
+{
+	char *infile_fd;
+	char *outfile_fd;
+
+	infile_fd = argv[1];
+	outfile_fd = argv[argc - 1];
+
+}
+
+void check_arg(int argc, char **argv)
+{
+	check_argc(argc);
+	// check_argv(argc, argv);
+}
 
 // char **envpによって環境変数を受け取ることができる
+// ./pipex infile cmd1 cmd2 outfile
 int main(int argc, char **argv, char **envp)
 {
 	char **bin_path;
@@ -24,9 +58,9 @@ int main(int argc, char **argv, char **envp)
 			// 入力用ファイルは読み取り可能であり，かつ，ディレクトリでないかを確かめる
 			// 出力用ファイルは書き込み可能であり，かつ，ディレクトリでないかを確かめる
 	// 環境変数のポインタenvpからbin_pathを取得する
-	get_bin_path(&bin_path, envp);
+	// get_bin_path(&bin_path, envp);
 	// pipexとしての処理をする
-	pipex(argc, argv, envp, bin_path);
+	// pipex(argc, argv, envp, bin_path);
 }
 
 /* やる
