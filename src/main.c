@@ -6,15 +6,18 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/17 09:47:59 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/17 10:23:57 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-// gcc main.c ../libft/libft.a && ./a.out
+/*
+gcc main.c ../libft/libft.a -o pipex
+./pipex infile cmd1 cmd2 outfile
+*/
 #include "../libft/libft.h"
 #include "../pipex.h"
 
-void put_error(char *err_msg)
+void exit_with_error(char *err_msg)
 {
 	write(STDERR_FILENO, err_msg, ft_strlen(err_msg));
 	exit(1);
@@ -23,7 +26,47 @@ void put_error(char *err_msg)
 void check_argc(int argc)
 {
 	if(argc < 5)
-		put_error(TOO_FEW_ARGC_ERROR);
+		exit_with_error(TOO_FEW_ARGC_ERROR);
+}
+
+void check_is_readable(char *file)
+{
+	if(access(file, R_OK))
+		exit_with_error(PERMISSION_DENIED_ERROR);
+}
+
+void check_is_writable(char *file)
+{
+	if(access(file, W_OK))
+		exit_with_error(PERMISSION_DENIED_ERROR);
+}
+
+void check_is_openable(char *file)
+{
+	int fd;
+
+	fd = open(file, O_RDWR);
+	close(fd);
+	if(fd == -1)
+		exit_with_error(FILE_OPEN_ERROR);
+}
+
+void check_infile(char *infile)
+{
+	check_is_readable(infile);
+	check_is_openable(infile);
+}
+
+void check_outfile(char *outfile)
+{
+	check_is_writable(outfile);
+	check_is_openable(outfile);
+}
+
+void check_file(char *infile, char *outfile)
+{
+	check_infile(infile);
+	check_outfile(outfile);
 }
 
 // ファイルが適切であるかを確かめる
@@ -36,17 +79,16 @@ void check_argv(int argc, char **argv)
 
 	infile_fd = argv[1];
 	outfile_fd = argv[argc - 1];
-
+	check_file(infile_fd, outfile_fd);
 }
 
 void check_arg(int argc, char **argv)
 {
 	check_argc(argc);
-	// check_argv(argc, argv);
+	check_argv(argc, argv);
 }
 
 // char **envpによって環境変数を受け取ることができる
-// ./pipex infile cmd1 cmd2 outfile
 int main(int argc, char **argv, char **envp)
 {
 	char **bin_path;
