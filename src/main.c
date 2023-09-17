@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/17 11:18:55 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/17 15:07:24 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,60 +31,112 @@ void	all_free(char **ptr)
 	free(ptr);
 	ptr = NULL;
 }
-// while (ans[i])
-// 	free(ans[i++]);
-// free(ans);
 
-void	exit_with_error(char *err_msg)
+void	put_error(char *err_msg)
 {
 	write(STDERR_FILENO, err_msg, ft_strlen(err_msg));
-	exit(1);
 }
 
-void	check_argc(int argc)
+int	is_argc_valid(int argc)
 {
 	if (argc < 5)
-		exit_with_error(TOO_FEW_ARGC_ERROR);
+	{
+		put_error(TOO_FEW_ARGC_ERROR);
+		return FALSE;
+	}
+	return TRUE;
 }
 
-void	check_is_readable(char *file)
+int	is_file_readable(char *file)
 {
 	if (access(file, R_OK))
-		exit_with_error(PERMISSION_DENIED_ERROR);
+	{
+		put_error(PERMISSION_DENIED_ERROR);
+		return FALSE;
+	}
+	return TRUE;
 }
 
-void	check_is_writable(char *file)
+int	is_file_writable(char *file)
 {
 	if (access(file, W_OK))
-		exit_with_error(PERMISSION_DENIED_ERROR);
+	{
+		put_error(PERMISSION_DENIED_ERROR);
+		return FALSE;
+	}
+	return TRUE;
 }
 
-void	check_is_openable(char *file)
+int is_file_exist(char *file)
+{
+	if (access(file, F_OK))
+	{
+		put_error(FILE_EXIST_ERROR);
+		return FALSE;
+	}
+	return TRUE;
+}
+
+int	is_file_openable(char *file)
 {
 	int	fd;
 
 	fd = open(file, O_RDWR);
 	close(fd);
 	if (fd == -1)
-		exit_with_error(FILE_OPEN_ERROR);
+	{
+		put_error(FILE_OPEN_ERROR);
+		return FALSE;
+	}
+	return TRUE;
 }
 
-void	check_infile(char *infile)
+int	is_infile_valid(char *infile)
 {
-	check_is_readable(infile);
-	check_is_openable(infile);
+	if(is_file_openable(infile) == FALSE)
+		return FALSE;
+	if(is_file_readable(infile) == FALSE)
+		return FALSE;
+	return TRUE;
 }
 
-void	check_outfile(char *outfile)
+int	is_outfile_valid(char *outfile)
 {
-	check_is_writable(outfile);
-	check_is_openable(outfile);
+	if(is_file_openable(outfile) == FALSE)
+		return FALSE;
+	if(is_file_writable(outfile) == FALSE)
+		return FALSE;
+	return TRUE;
 }
 
-void	check_file(char *infile, char *outfile)
+int is_specified_here_doc(char **argv)
 {
-	check_infile(infile);
-	check_outfile(outfile);
+	return (!ft_strncmp(argv[1], "here_doc", ft_strlen("here_doc")));
+}
+
+
+char *get_infile(char **argv)
+{
+	char *infile;
+
+	if (is_specified_here_doc(argv))
+	{
+		if(is_file_exist(argv[3]))
+			infile = argv[3];
+		else
+			infile = INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC;
+	}
+	else
+		infile = argv[1];
+	return infile;
+}
+
+char *get_outfile(char argc, char **argv)
+{
+	char *outfile;
+
+	outfile = argv[argc - 1];
+	return outfile;
 }
 
 /* ■ファイルおよびコマンドは適切なものであるかを確かめる
@@ -92,15 +144,22 @@ void	check_file(char *infile, char *outfile)
  * 	・出力用ファイルは書き込み可能であり，かつ，ディレクトリでないかを確かめる
  * 	・コマンドが存在するかを確かめる（command not foundとならないかを調べる）　◀︎━ここからやる！
  */
-void	check_argv(int argc, char **argv)
+int	is_argv_valid(int argc, char **argv)
 {
-	char	*infile_fd;
-	char	*outfile_fd;
+	char *infile;
+	char *outfile;
 
-	infile_fd = argv[1];
-	outfile_fd = argv[argc - 1];
-	check_file(infile_fd, outfile_fd);
-	// check_cmd();
+	infile = get_infile(argv);
+	outfile = get_outfile(argc, argv);
+
+	if (infile != INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC)
+		if(is_infile_valid(infile) == FALSE)
+			return FALSE;
+	if(is_outfile_valid(outfile) == FALSE)
+		return FALSE;
+	// if(is_valid_cmd() == FALSE)
+	// 	return FALSE;
+	return TRUE;
 }
 
 /* コマンドライン引数が適切であるかを確かめる
@@ -109,14 +168,16 @@ void	check_argv(int argc, char **argv)
  */
 void	check_arg(int argc, char **argv)
 {
-	check_argc(argc);
-	check_argv(argc, argv);
+	if(is_argc_valid(argc) == FALSE)
+		exit(1);
+	if(is_argv_valid(argc, argv) == FALSE)
+		exit(1);
 }
 
 void	check_malloc(void *ptr)
 {
 	if (ptr == NULL)
-		exit_with_error(MALLOC_ERROR);
+		put_error(MALLOC_ERROR);
 }
 
 void	get_env_path(char ***env_path, char **envp)
@@ -127,7 +188,7 @@ void	get_env_path(char ***env_path, char **envp)
 	while (envp[i] && ft_strncmp(envp[i], "PATH=", ft_strlen("PATH=")))
 		i++;
 	if (envp[i] == NULL)
-		exit_with_error(PATH_ERROR);
+		put_error(PATH_EXIST_ERROR);
 	*env_path = ft_split(envp[i] + ft_strlen("PATH="), ':');
 	check_malloc(env_path);
 }
@@ -151,90 +212,6 @@ int	main(int argc, char **argv, char **envp)
 	// pipex(argc, argv, envp, bin_path);
 	all_free(env_path);
 }
-
-/* やる
-
-1．使用可能な関数それぞれの内容を理解する
-execve，dup2，pipe，
-
-2．パイプについて理解する
-
-
-3．パイプを実装する？
-
-access		ファイルに対する実ユーザーでのアクセス権をチェックする
-dup
-dup2		1（STD_OUT：標準出力）であるfd（第1引数？）を任意のfd（第2引数？）に変える．
-execve		プログラムを実行する．たとえば，ls | catでは，execveがlsとcatで2回呼ばれる，第1引数にコマンドの絶対パス（/bin/lsなど），第2引数に実行するコマンド全部（ls
-			-a (null)など），第3引数は環境変数．
-exit
-fork		子プロセスを生成する
-pipe		保存領域を確保する．	パイプ関数が成功したら，引数として渡したpipefd[0]に読み込み用のfdが，pipefd[1]に書き込み用のfdが返される．
-unlink		filenameで指定されたファイル（今回の場合ヒアドク<<時に生成したファイル）を削除する．　rm -f と同義
-wait		親プロセスで実行するもの．親プロセスに対するwaitは子プロセスの終了を待つために行われる．PIDは指定できない．waitしているものと親子関係にあるPIDのいずれか一つが終了するまで処理を中断する．
-waitpid		親プロセスで実行するもの．親プロセスに対するwaitは子プロセスの終了を待つために行われる．PIDを指定できる．指定したPIDが終了するまで処理を中断する．　◀︎━PIDを指定する必要がなければwaitで良い．
-
-a.out──────────────
-		├fork ━▶︎ execve
-		├fork ━▶︎ execve
-		├fork ━▶︎ execve
-		├fork ━▶︎ execve
-ヒアドク	<<
-$ <<a cat
-heredoc> hello		//	ファイルを生成し，コマンドを実行する上での引数（入力内容）をファイルに保存する
-heredoc> a			//	<<の後に来る文字と同様の文字が来たらファイルの書き込みを終了する
-hello				//	cat ファイルに書き込んだデータ が実行される
-
-
-
- */
-
-/* access ファイルに対する実ユーザーでのアクセス権をチェックする
-
-■プロトタイプ
-#include <unistd.h>
-int		access(const char *filepath, int amode);
-＊第1引数　ファイル名
-＊第2引数　チェックするモード
-			├ R_OK	読み出し許可と，ファイルの存在をチェックする
-			├ W_OK	書き込み許可と，ファイルの存在をチェックする
-			├ X_OK	実行許可と，ファイルの存在をチェックする
-			└ F_OK	ファイルの存在をチェックする
-
-■返り値
-0	アクセス権あり
--1	アクセス権なし
-
- */
-
-/* unlink filenameで指定されたファイル（今回の場合ヒアドク<<時に生成したファイル）を削除する．　rm -f と同義
-
-■プロトタイプ
-#include <unistd.h>
-int		unlink(const char *filename);
-
-■返り値
-0	filenameの削除に成功した
--1	filenameの削除に失敗した
-
- */
-
-/* waitpid	プロセスIDの状態を変化を待つ．
-特定の子プロセスを待つ機能を提供し，戻り値のトリガ動作を変更する．
-子プロセスが終了した場合に加えて，子プロセスが停止した場合や継続した場合にも返すことができる．
-子プロセスが異常終了した場合はstatus_ptrが0以外の値を返す．
-
-■プロトタイプ
-#include <sys/wait.h>
-
-pid_t	waitpid(pid_t pid, int *status_ptr, int options);
-
-
-第1引数　呼び出し元が待機する必要がある子プロセス
-
-
-
- */
 
 __attribute__((destructor)) static void destructor()
 {

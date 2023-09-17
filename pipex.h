@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 09:29:26 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/17 10:50:50 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/17 15:04:02 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,13 @@
 	./pipex file1 cmd1 cmd2 file2\n"
 # define PERMISSION_DENIED_ERROR "permission denied\n"
 # define FILE_OPEN_ERROR "unable to open file\n"
-# define PATH_ERROR "PATH not found\n"
+# define PATH_EXIST_ERROR "PATH not found\n"
+# define FILE_EXIST_ERROR "file not found\n"
+# define MALLOC_ERROR "failed to malloc\n"
 
-#define MALLOC_ERROR "failed to malloc\n"
+# define TRUE 1
+# define FALSE 0
+
+# define INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC 0
 
 #endif
