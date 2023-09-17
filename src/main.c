@@ -6,16 +6,34 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/17 10:59:47 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/17 11:18:55 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 /*
-gcc main.c ../libft/libft.a -o pipex
+cc -Wall -Wextra -Werror main.c ../libft/libft.a -o pipex
 ./pipex infile cmd1 cmd2 outfile
 */
 #include "../libft/libft.h"
 #include "../pipex.h"
+
+void	all_free(char **ptr)
+{
+	int	i;
+
+	i = 0;
+	while (ptr[i])
+	{
+		free(ptr[i]);
+		ptr[i] = NULL;
+		i++;
+	}
+	free(ptr);
+	ptr = NULL;
+}
+// while (ans[i])
+// 	free(ans[i++]);
+// free(ans);
 
 void	exit_with_error(char *err_msg)
 {
@@ -69,9 +87,11 @@ void	check_file(char *infile, char *outfile)
 	check_outfile(outfile);
 }
 
-// ファイルが適切であるかを確かめる
-// 入力用ファイルは読み取り可能であり，かつ，ディレクトリでないかを確かめる
-// 出力用ファイルは書き込み可能であり，また存在しており，かつ，ディレクトリでないかを確かめる
+/* ■ファイルおよびコマンドは適切なものであるかを確かめる
+ * 	・入力用ファイルは読み取り可能であり，かつ，ディレクトリでないかを確かめる
+ * 	・出力用ファイルは書き込み可能であり，かつ，ディレクトリでないかを確かめる
+ * 	・コマンドが存在するかを確かめる（command not foundとならないかを調べる）　◀︎━ここからやる！
+ */
 void	check_argv(int argc, char **argv)
 {
 	char	*infile_fd;
@@ -80,14 +100,12 @@ void	check_argv(int argc, char **argv)
 	infile_fd = argv[1];
 	outfile_fd = argv[argc - 1];
 	check_file(infile_fd, outfile_fd);
+	// check_cmd();
 }
 
 /* コマンドライン引数が適切であるかを確かめる
- *
- * ■コマンドライン引数の数は5個以上あるかを確かめる
- * ■ファイルが適切であるかを確かめる
- * 	・入力用ファイルは読み取り可能であり，かつ，ディレクトリでないかを確かめる
- * 	・出力用ファイルは書き込み可能であり，かつ，ディレクトリでないかを確かめる
+ * ・コマンドライン引数の数は5個以上あるかを確かめる
+ * ・ファイルおよびコマンドは適切なものであるかを確かめる
  */
 void	check_arg(int argc, char **argv)
 {
@@ -119,18 +137,19 @@ int	main(int argc, char **argv, char **envp)
 {
 	char	**env_path;
 
-	check_arg(argc, argv);
 	// 環境変数のポインタenvpからbin_pathを取得する
 	get_env_path(&env_path, envp);
+	check_arg(argc, argv);
 // int i;
 // i = 0;
-// while(bin_path[i])
+// while(env_path[i])
 // {
 // 	ft_printf("%s\n", env_path[i]);
 // 	i++;
 // }
 	// pipexとしての処理をする
 	// pipex(argc, argv, envp, bin_path);
+	all_free(env_path);
 }
 
 /* やる
@@ -216,3 +235,8 @@ pid_t	waitpid(pid_t pid, int *status_ptr, int options);
 
 
  */
+
+__attribute__((destructor)) static void destructor()
+{
+	system("leaks -q pipex");
+}
