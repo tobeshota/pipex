@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/17 10:23:57 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/17 10:59:47 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,90 +17,118 @@ gcc main.c ../libft/libft.a -o pipex
 #include "../libft/libft.h"
 #include "../pipex.h"
 
-void exit_with_error(char *err_msg)
+void	exit_with_error(char *err_msg)
 {
 	write(STDERR_FILENO, err_msg, ft_strlen(err_msg));
 	exit(1);
 }
 
-void check_argc(int argc)
+void	check_argc(int argc)
 {
-	if(argc < 5)
+	if (argc < 5)
 		exit_with_error(TOO_FEW_ARGC_ERROR);
 }
 
-void check_is_readable(char *file)
+void	check_is_readable(char *file)
 {
-	if(access(file, R_OK))
+	if (access(file, R_OK))
 		exit_with_error(PERMISSION_DENIED_ERROR);
 }
 
-void check_is_writable(char *file)
+void	check_is_writable(char *file)
 {
-	if(access(file, W_OK))
+	if (access(file, W_OK))
 		exit_with_error(PERMISSION_DENIED_ERROR);
 }
 
-void check_is_openable(char *file)
+void	check_is_openable(char *file)
 {
-	int fd;
+	int	fd;
 
 	fd = open(file, O_RDWR);
 	close(fd);
-	if(fd == -1)
+	if (fd == -1)
 		exit_with_error(FILE_OPEN_ERROR);
 }
 
-void check_infile(char *infile)
+void	check_infile(char *infile)
 {
 	check_is_readable(infile);
 	check_is_openable(infile);
 }
 
-void check_outfile(char *outfile)
+void	check_outfile(char *outfile)
 {
 	check_is_writable(outfile);
 	check_is_openable(outfile);
 }
 
-void check_file(char *infile, char *outfile)
+void	check_file(char *infile, char *outfile)
 {
 	check_infile(infile);
 	check_outfile(outfile);
 }
 
 // ファイルが適切であるかを確かめる
-	// 入力用ファイルは読み取り可能であり，かつ，ディレクトリでないかを確かめる
-	// 出力用ファイルは書き込み可能であり，また存在しており，かつ，ディレクトリでないかを確かめる
-void check_argv(int argc, char **argv)
+// 入力用ファイルは読み取り可能であり，かつ，ディレクトリでないかを確かめる
+// 出力用ファイルは書き込み可能であり，また存在しており，かつ，ディレクトリでないかを確かめる
+void	check_argv(int argc, char **argv)
 {
-	char *infile_fd;
-	char *outfile_fd;
+	char	*infile_fd;
+	char	*outfile_fd;
 
 	infile_fd = argv[1];
 	outfile_fd = argv[argc - 1];
 	check_file(infile_fd, outfile_fd);
 }
 
-void check_arg(int argc, char **argv)
+/* コマンドライン引数が適切であるかを確かめる
+ *
+ * ■コマンドライン引数の数は5個以上あるかを確かめる
+ * ■ファイルが適切であるかを確かめる
+ * 	・入力用ファイルは読み取り可能であり，かつ，ディレクトリでないかを確かめる
+ * 	・出力用ファイルは書き込み可能であり，かつ，ディレクトリでないかを確かめる
+ */
+void	check_arg(int argc, char **argv)
 {
 	check_argc(argc);
 	check_argv(argc, argv);
 }
 
-// char **envpによって環境変数を受け取ることができる
-int main(int argc, char **argv, char **envp)
+void	check_malloc(void *ptr)
 {
-	char **bin_path;
+	if (ptr == NULL)
+		exit_with_error(MALLOC_ERROR);
+}
 
-	// コマンドライン引数が適切であるかを確かめる
+void	get_env_path(char ***env_path, char **envp)
+{
+	int	i;
+
+	i = 0;
+	while (envp[i] && ft_strncmp(envp[i], "PATH=", ft_strlen("PATH=")))
+		i++;
+	if (envp[i] == NULL)
+		exit_with_error(PATH_ERROR);
+	*env_path = ft_split(envp[i] + ft_strlen("PATH="), ':');
+	check_malloc(env_path);
+}
+
+// char **envpによって環境変数を受け取ることができる
+int	main(int argc, char **argv, char **envp)
+{
+	char	**env_path;
+
 	check_arg(argc, argv);
-		// コマンドライン引数の数は5個以上あるかを確かめる
-		// ファイルが適切であるかを確かめる
-			// 入力用ファイルは読み取り可能であり，かつ，ディレクトリでないかを確かめる
-			// 出力用ファイルは書き込み可能であり，かつ，ディレクトリでないかを確かめる
 	// 環境変数のポインタenvpからbin_pathを取得する
-	// get_bin_path(&bin_path, envp);
+	get_env_path(&env_path, envp);
+// int i;
+// i = 0;
+// while(bin_path[i])
+// {
+// 	ft_printf("%s\n", env_path[i]);
+// 	i++;
+// }
 	// pipexとしての処理をする
 	// pipex(argc, argv, envp, bin_path);
 }
@@ -118,7 +146,8 @@ execve，dup2，pipe，
 access		ファイルに対する実ユーザーでのアクセス権をチェックする
 dup
 dup2		1（STD_OUT：標準出力）であるfd（第1引数？）を任意のfd（第2引数？）に変える．
-execve		プログラムを実行する．たとえば，ls | catでは，execveがlsとcatで2回呼ばれる，第1引数にコマンドの絶対パス（/bin/lsなど），第2引数に実行するコマンド全部（ls -a (null)など），第3引数は環境変数．
+execve		プログラムを実行する．たとえば，ls | catでは，execveがlsとcatで2回呼ばれる，第1引数にコマンドの絶対パス（/bin/lsなど），第2引数に実行するコマンド全部（ls
+			-a (null)など），第3引数は環境変数．
 exit
 fork		子プロセスを生成する
 pipe		保存領域を確保する．	パイプ関数が成功したら，引数として渡したpipefd[0]に読み込み用のfdが，pipefd[1]に書き込み用のfdが返される．
@@ -127,10 +156,10 @@ wait		親プロセスで実行するもの．親プロセスに対するwaitは�
 waitpid		親プロセスで実行するもの．親プロセスに対するwaitは子プロセスの終了を待つために行われる．PIDを指定できる．指定したPIDが終了するまで処理を中断する．　◀︎━PIDを指定する必要がなければwaitで良い．
 
 a.out──────────────
-	 	├fork ━▶︎ execve
 		├fork ━▶︎ execve
 		├fork ━▶︎ execve
-	 	├fork ━▶︎ execve
+		├fork ━▶︎ execve
+		├fork ━▶︎ execve
 ヒアドク	<<
 $ <<a cat
 heredoc> hello		//	ファイルを生成し，コマンドを実行する上での引数（入力内容）をファイルに保存する
@@ -145,7 +174,7 @@ hello				//	cat ファイルに書き込んだデータ が実行される
 
 ■プロトタイプ
 #include <unistd.h>
-int access(const char *filepath, int amode);
+int		access(const char *filepath, int amode);
 ＊第1引数　ファイル名
 ＊第2引数　チェックするモード
 			├ R_OK	読み出し許可と，ファイルの存在をチェックする
@@ -163,15 +192,13 @@ int access(const char *filepath, int amode);
 
 ■プロトタイプ
 #include <unistd.h>
-int unlink(const char *filename);
+int		unlink(const char *filename);
 
 ■返り値
 0	filenameの削除に成功した
 -1	filenameの削除に失敗した
 
  */
-
-
 
 /* waitpid	プロセスIDの状態を変化を待つ．
 特定の子プロセスを待つ機能を提供し，戻り値のトリガ動作を変更する．
@@ -180,7 +207,8 @@ int unlink(const char *filename);
 
 ■プロトタイプ
 #include <sys/wait.h>
-pid_t waitpid(pid_t pid, int *status_ptr, int options);
+
+pid_t	waitpid(pid_t pid, int *status_ptr, int options);
 
 
 第1引数　呼び出し元が待機する必要がある子プロセス
