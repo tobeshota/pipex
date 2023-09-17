@@ -1,0 +1,4 @@
+*.o
+src/pipex*
+*.a
+.vscode*
