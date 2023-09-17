@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/17 15:07:24 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/17 16:49:32 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,7 +142,7 @@ char *get_outfile(char argc, char **argv)
 /* ■ファイルおよびコマンドは適切なものであるかを確かめる
  * 	・入力用ファイルは読み取り可能であり，かつ，ディレクトリでないかを確かめる
  * 	・出力用ファイルは書き込み可能であり，かつ，ディレクトリでないかを確かめる
- * 	・コマンドが存在するかを確かめる（command not foundとならないかを調べる）　◀︎━ここからやる！
+ * 	・コマンドが存在するかを確かめる（command not foundとならないかを調べる）
  */
 int	is_argv_valid(int argc, char **argv)
 {
@@ -193,13 +193,27 @@ void	get_env_path(char ***env_path, char **envp)
 	check_malloc(env_path);
 }
 
+void	get_cmd_absolute_path(char ***cmd_absolute_path, int argc, char **argv, char **env_path)
+{
+	// cmdであるべきものを取得する
+		// 実行ファイルでない，infileargv[1]でない，outfile argv[argc-1]でない．
+		// "here_doc"がない場合，argv[0](実行ファイル)，argv[1](infile)，argv[argc-1](outfile)以外
+		// "here_doc"がある場合，argv[0](実行ファイル)，argv[1](here_doc)，argv[2](LIMITTER)，argv[argc-1](outfile)以外であり，かつ，F_OKに失敗したもの
+	get_cmd();
+	// cmdにパスを加える
+		// cmd一つ一つに対して，にenv_pathを一つずつ結合していき，それが実行可能であるならば，それをコマンドの絶対パスとして返す.実行可能なenv_pathが見つからなければ，エラーとする
+	add_absolute_path_to_cmd();
+}
 // char **envpによって環境変数を受け取ることができる
 int	main(int argc, char **argv, char **envp)
 {
 	char	**env_path;
+	char 	**cmd_absolute_path;
 
 	// 環境変数のポインタenvpからbin_pathを取得する
 	get_env_path(&env_path, envp);
+	// コマンドライン引数からcmdの絶対パスを取得する
+	get_cmd_absolute_path(&cmd_absolute_path, argc, argv, env_path);
 	check_arg(argc, argv);
 // int i;
 // i = 0;
