@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/18 10:31:23 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/18 11:03:11 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -241,11 +241,40 @@ int get_cmd_count(int argc, char **argv)
 	return cmd_count;
 }
 
+// void get_cmd_name_from_arg(char ***cmd_absolute_path, int argc, char **argv)
+// {
+// 	int arg_i;
+// 	int cmd_i;
+
+// 	if (is_specified_here_doc(argv))
+// 		arg_i = 3;
+// 	else
+// 		arg_i = 2;
+// 	cmd_i = 0;
+// 	while (arg_i < argc - 1)
+// 	{
+// 		if (access(argv[arg_i], F_OK))
+// 		{
+// 			cmd_absolute_path[0][cmd_i] = ft_strdup(argv[arg_i]);
+// 			check_malloc(cmd_absolute_path[0][cmd_i]);
+// 			cmd_i++;
+// 		}
+// 		arg_i++;
+// 	}
+// 	cmd_absolute_path[0][cmd_i] = NULL;
+// }
+
+/* コマンドライン引数からcmdであるべきものを取得する
+ * "here_doc"がない場合，argv[0](実行ファイル)，argv[1](infile)，argv[argc-1](outfile)以外を「cmdであるべきもの」として取得する
+ * "here_doc"がある場合，argv[0](実行ファイル)，argv[1](here_doc)，argv[2](LIMITTER)，argv[argc-1](outfile)以外であり，かつ，F_OKに失敗したものを「cmdであるべきもの」として取得する
+ */
 void get_cmd_name_from_arg(char ***cmd_absolute_path, int argc, char **argv)
 {
 	int arg_i;
 	int cmd_i;
 
+	*cmd_absolute_path = (char **)malloc(sizeof(char *) * (get_cmd_count(argc, argv) + 1));
+	check_malloc(*cmd_absolute_path);
 	if (is_specified_here_doc(argv))
 		arg_i = 3;
 	else
@@ -264,19 +293,6 @@ void get_cmd_name_from_arg(char ***cmd_absolute_path, int argc, char **argv)
 	cmd_absolute_path[0][cmd_i] = NULL;
 }
 
-/* コマンドライン引数からcmdであるべきものを取得する
- * "here_doc"がない場合，argv[0](実行ファイル)，argv[1](infile)，argv[argc-1](outfile)以外を「cmdであるべきもの」として取得する
- * "here_doc"がある場合，argv[0](実行ファイル)，argv[1](here_doc)，argv[2](LIMITTER)，argv[argc-1](outfile)以外であり，かつ，F_OKに失敗したものを「cmdであるべきもの」として取得する
- */
-void get_cmd_from_arg(char ***cmd_absolute_path, int argc, char **argv)
-{
-	// コマンドの数+1（その次はNULL）ぶんcmd_absolute_pathの動的配列を確保する
-	*cmd_absolute_path = (char **)malloc(sizeof(char *) * (get_cmd_count(argc, argv) + 1));
-	check_malloc(*cmd_absolute_path);
-	// コマンドをcmd_absolute_pathに格納する
-	get_cmd_name_from_arg(cmd_absolute_path, argc, argv);
-}
-
 void check_cmd(char *env_path)
 {
 	if (env_path == NULL)
@@ -291,7 +307,7 @@ void check_cmd(char *env_path)
  * 結合したものが実行可能であるならば，それをコマンドの絶対パスとして返す.
  * 実行可能なenv_pathが見つからなければ，エラーとする．
  */
-void add_absolute_path_to_cmd(char ***cmd_absolute_path, char **env_path)
+void add_absolute_path_to_cmd_name(char ***cmd_absolute_path, char **env_path)
 {
 	int cmd_i;
 	int env_i;
@@ -322,42 +338,42 @@ void add_absolute_path_to_cmd(char ***cmd_absolute_path, char **env_path)
 }
 
 /*コマンドライン引数からcmdの絶対パスを取得する
+ * ・環境変数のポインタenvpからbin_pathを取得する
  * ・cmdであるべきものを取得する
  * ・cmdにパスを加える
  */
-void	get_cmd_absolute_path(char ***cmd_absolute_path, int argc, char **argv, char **env_path)
-{
-	// コマンドライン引数からcmdであるべきものを取得する
-	get_cmd_from_arg(cmd_absolute_path, argc, argv);
-	// cmdにパスを加える
-	add_absolute_path_to_cmd(cmd_absolute_path, env_path);
-}
-
-// char **envpによって環境変数を受け取ることができる
-int	main(int argc, char **argv, char **envp)
+void	get_cmd_absolute_path(char ***cmd_absolute_path, int argc, char **argv, char **envp)
 {
 	char	**env_path;
+
+	get_env_path(&env_path, envp);
+// env_path = ft_split("PATH=/Library/Frameworks/Python.framework/Versions/3.6/bin/:/Users/tobeshota/anaconda3/condabin/:/opt/homebrew/opt/node@18/bin/:/Users/tobeshota/.cargo/bin/:/usr/local/Qt-5.15.10/bin/:/opt/homebrew/opt/pyqt@5/5 5.15.7_2/bin/:/opt/homebrew/opt/qt@5/bin/:/Users/tobeshota/.nodebrew/current/bin/:/Users/tobeshota/.pyenv/shims/:/Users/tobeshota/.pyenv/bin/:/Library/Frameworks/Python.framework/Versions/3.10/bin/:/usr/local/bin/:/usr/bin/:/bin/:/usr/sbin/:/sbin/:/opt/X11/bin/:/Users/tobeshota/workspace/command", ':');
+	get_cmd_name_from_arg(cmd_absolute_path, argc, argv);
+	add_absolute_path_to_cmd_name(cmd_absolute_path, env_path);
+	all_free(env_path);
+}
+
+// void pipex(int argc, char **argv, char **envp, char **cmd_absolute_path)
+// {
+// 	;
+// }
+
+int	main(int argc, char **argv, char **envp)
+{
 	char 	**cmd_absolute_path;
 
-	// 環境変数のポインタenvpからbin_pathを取得する
-	get_env_path(&env_path, envp);
-// argv = ft_split("./pipex here_doc wow cmd1 cmd2 outfile", ' ');
+// argv = ft_split("./pipex infile ls cat brew outfile", ' ');
 // argc = 6;
-// env_path = ft_split("PATH=/Library/Frameworks/Python.framework/Versions/3.6/bin/:/Users/tobeshota/anaconda3/condabin/:/opt/homebrew/opt/node@18/bin/:/Users/tobeshota/.cargo/bin/:/usr/local/Qt-5.15.10/bin/:/opt/homebrew/opt/pyqt@5/5 5.15.7_2/bin/:/opt/homebrew/opt/qt@5/bin/:/Users/tobeshota/.nodebrew/current/bin/:/Users/tobeshota/.pyenv/shims/:/Users/tobeshota/.pyenv/bin/:/Library/Frameworks/Python.framework/Versions/3.10/bin/:/usr/local/bin/:/usr/bin/:/bin/:/usr/sbin/:/sbin/:/opt/X11/bin/:/Users/tobeshota/workspace/command", ':');
 
-	// コマンドライン引数からcmdの絶対パスを取得する
-	get_cmd_absolute_path(&cmd_absolute_path, argc, argv, env_path);
 	check_arg(argc, argv);
-
-// for (int i = 0; env_path[i]; i++)
-// 	ft_printf("%s\n", env_path[i]);
+	// コマンドライン引数からcmdの絶対パスを取得する
+	get_cmd_absolute_path(&cmd_absolute_path, argc, argv, envp);
 
 for (int i = 0; cmd_absolute_path[i]; i++)
 	ft_printf("%s\n", cmd_absolute_path[i]);
 
 	// pipexとしての処理をする
-	// pipex(argc, argv, envp, bin_path);
-	all_free(env_path);
+	// pipex(argc, argv, envp, cmd_absolute_path);
 	all_free(cmd_absolute_path);
 // all_free(argv);
 }
