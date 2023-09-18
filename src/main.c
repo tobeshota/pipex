@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/18 11:03:11 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/18 11:04:55 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -241,29 +241,6 @@ int get_cmd_count(int argc, char **argv)
 	return cmd_count;
 }
 
-// void get_cmd_name_from_arg(char ***cmd_absolute_path, int argc, char **argv)
-// {
-// 	int arg_i;
-// 	int cmd_i;
-
-// 	if (is_specified_here_doc(argv))
-// 		arg_i = 3;
-// 	else
-// 		arg_i = 2;
-// 	cmd_i = 0;
-// 	while (arg_i < argc - 1)
-// 	{
-// 		if (access(argv[arg_i], F_OK))
-// 		{
-// 			cmd_absolute_path[0][cmd_i] = ft_strdup(argv[arg_i]);
-// 			check_malloc(cmd_absolute_path[0][cmd_i]);
-// 			cmd_i++;
-// 		}
-// 		arg_i++;
-// 	}
-// 	cmd_absolute_path[0][cmd_i] = NULL;
-// }
-
 /* コマンドライン引数からcmdであるべきものを取得する
  * "here_doc"がない場合，argv[0](実行ファイル)，argv[1](infile)，argv[argc-1](outfile)以外を「cmdであるべきもの」として取得する
  * "here_doc"がある場合，argv[0](実行ファイル)，argv[1](here_doc)，argv[2](LIMITTER)，argv[argc-1](outfile)以外であり，かつ，F_OKに失敗したものを「cmdであるべきもの」として取得する
@@ -314,11 +291,9 @@ void add_absolute_path_to_cmd_name(char ***cmd_absolute_path, char **env_path)
 	char *tmp;
 
 	cmd_i = 0;
-	// cmd一つ一つに対して，にenv_pathを一つずつ結合していく．
 	while(cmd_absolute_path[0][cmd_i])
 	{
 		env_i = 0;
-		// 結合したものが実行可能であるならば，それをコマンドの絶対パスとして返す.
 		while (env_path[env_i])
 		{
 			tmp = ft_strjoin(env_path[env_i], cmd_absolute_path[0][cmd_i]);
