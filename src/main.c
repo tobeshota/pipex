@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: toshota <toshota@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/18 12:15:38 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/18 15:19:51 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 gcc -g main.c ../libft/libft.a -o pipex
 
 cc -Wall -Wextra -Werror main.c ../libft/libft.a -o pipex
-./pipex infile ls cat outfile
+./pipex infile "ls -a" cat outfile
 ./pipex here_doc wow ls cat outfile
 */
 #include "../libft/libft.h"
@@ -246,6 +246,15 @@ int get_cmd_count(int argc, char **argv)
 	return cmd_count;
 }
 
+int strlen_until_c(char *str, char c)
+{
+	int len;
+	len = 0;
+	while(str[len] != '\0' && str[len] != c)
+		len++;
+	return len;
+}
+
 /* コマンドライン引数からcmdであるべきものを取得する
  * "here_doc"がない場合，argv[0](実行ファイル)，argv[1](infile)，argv[argc-1](outfile)以外を「cmdであるべきもの」として取得する
  * "here_doc"がある場合，argv[0](実行ファイル)，argv[1](here_doc)，argv[2](LIMITTER)，argv[argc-1](outfile)以外であり，かつ，F_OKに失敗したものを「cmdであるべきもの」として取得する
@@ -266,7 +275,7 @@ void get_cmd_name_from_arg(char ***cmd_absolute_path, int argc, char **argv)
 	{
 		if (access(argv[arg_i], F_OK))
 		{
-			cmd_absolute_path[0][cmd_i] = ft_strdup(argv[arg_i]);
+			cmd_absolute_path[0][cmd_i] = ft_substr(argv[arg_i], 0, strlen_until_c(argv[arg_i], ' '));
 			check_malloc(cmd_absolute_path[0][cmd_i]);
 			cmd_i++;
 		}
