@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/18 09:55:29 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/18 10:31:23 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,8 @@
 gcc -g main.c ../libft/libft.a -o pipex
 
 cc -Wall -Wextra -Werror main.c ../libft/libft.a -o pipex
-./pipex infile cmd1 cmd2 outfile
+./pipex infile ls cat outfile
+./pipex here_doc wow ls cat outfile
 */
 #include "../libft/libft.h"
 #include "../pipex.h"
@@ -276,6 +277,14 @@ void get_cmd_from_arg(char ***cmd_absolute_path, int argc, char **argv)
 	get_cmd_name_from_arg(cmd_absolute_path, argc, argv);
 }
 
+void check_cmd(char *env_path)
+{
+	if (env_path == NULL)
+	{
+		put_error(CMD_ERROR);
+		exit(1);
+	}
+}
 
 /* cmdにパスを加える
  * cmd一つ一つに対して，にenv_pathを一つずつ結合していく．
@@ -284,12 +293,33 @@ void get_cmd_from_arg(char ***cmd_absolute_path, int argc, char **argv)
  */
 void add_absolute_path_to_cmd(char ***cmd_absolute_path, char **env_path)
 {
+	int cmd_i;
+	int env_i;
+	char *tmp;
 
+	cmd_i = 0;
 	// cmd一つ一つに対して，にenv_pathを一つずつ結合していく．
-	// 結合したものが実行可能であるならば，それをコマンドの絶対パスとして返す.
-	//
+	while(cmd_absolute_path[0][cmd_i])
+	{
+		env_i = 0;
+		// 結合したものが実行可能であるならば，それをコマンドの絶対パスとして返す.
+		while (env_path[env_i])
+		{
+			tmp = ft_strjoin(env_path[env_i], cmd_absolute_path[0][cmd_i]);
+			if (!access(tmp, X_OK))
+			{
+				free(cmd_absolute_path[0][cmd_i]);
+				cmd_absolute_path[0][cmd_i] = ft_strdup(tmp);
+				free(tmp);
+				break;
+			}
+			free(tmp);
+			env_i++;
+		}
+		check_cmd(env_path[env_i]);
+		cmd_i++;
+	}
 }
-
 
 /*コマンドライン引数からcmdの絶対パスを取得する
  * ・cmdであるべきものを取得する
@@ -300,7 +330,6 @@ void	get_cmd_absolute_path(char ***cmd_absolute_path, int argc, char **argv, cha
 	// コマンドライン引数からcmdであるべきものを取得する
 	get_cmd_from_arg(cmd_absolute_path, argc, argv);
 	// cmdにパスを加える
-		// cmd一つ一つに対して，にenv_pathを一つずつ結合していき，それが実行可能であるならば，それをコマンドの絶対パスとして返す.実行可能なenv_pathが見つからなければ，エラーとする
 	add_absolute_path_to_cmd(cmd_absolute_path, env_path);
 }
 
@@ -314,14 +343,14 @@ int	main(int argc, char **argv, char **envp)
 	get_env_path(&env_path, envp);
 // argv = ft_split("./pipex here_doc wow cmd1 cmd2 outfile", ' ');
 // argc = 6;
-// env_path = ft_split("PATH=/Library/Frameworks/Python.framework/Versions/3.6/bin:/Users/tobeshota/anaconda3/condabin:/opt/homebrew/opt/node@18/bin:/Users/tobeshota/.cargo/bin:/usr/local/Qt-5.15.10/bin:/opt/homebrew/opt/pyqt@5/5 5.15.7_2/bin:/opt/homebrew/opt/qt@5/bin:/Users/tobeshota/.nodebrew/current/bin:/Users/tobeshota/.pyenv/shims:/Users/tobeshota/.pyenv/bin:/Library/Frameworks/Python.framework/Versions/3.10/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Users/tobeshota/workspace/command", ':');
+// env_path = ft_split("PATH=/Library/Frameworks/Python.framework/Versions/3.6/bin/:/Users/tobeshota/anaconda3/condabin/:/opt/homebrew/opt/node@18/bin/:/Users/tobeshota/.cargo/bin/:/usr/local/Qt-5.15.10/bin/:/opt/homebrew/opt/pyqt@5/5 5.15.7_2/bin/:/opt/homebrew/opt/qt@5/bin/:/Users/tobeshota/.nodebrew/current/bin/:/Users/tobeshota/.pyenv/shims/:/Users/tobeshota/.pyenv/bin/:/Library/Frameworks/Python.framework/Versions/3.10/bin/:/usr/local/bin/:/usr/bin/:/bin/:/usr/sbin/:/sbin/:/opt/X11/bin/:/Users/tobeshota/workspace/command", ':');
 
 	// コマンドライン引数からcmdの絶対パスを取得する
 	get_cmd_absolute_path(&cmd_absolute_path, argc, argv, env_path);
 	check_arg(argc, argv);
 
-for (int i = 0; env_path[i]; i++)
-	ft_printf("%s\n", env_path[i]);
+// for (int i = 0; env_path[i]; i++)
+// 	ft_printf("%s\n", env_path[i]);
 
 for (int i = 0; cmd_absolute_path[i]; i++)
 	ft_printf("%s\n", cmd_absolute_path[i]);

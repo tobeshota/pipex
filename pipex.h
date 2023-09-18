@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 09:29:26 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/17 16:42:48 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/18 10:32:01 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 # define PATH_EXIST_ERROR "PATH not found\n"
 # define FILE_EXIST_ERROR "file not found\n"
 # define MALLOC_ERROR "failed to malloc\n"
-
+# define CMD_ERROR "command not found\n"
 # define TRUE 1
 # define FALSE 0
 
