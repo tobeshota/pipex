@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/18 09:45:12 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/18 09:55:29 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -190,6 +190,22 @@ void	check_malloc(void *ptr)
 	}
 }
 
+// env_pathそれぞれの文字列の終わりに"/"を加える．
+void add_slash_eos(char ***env_path)
+{
+	char *tmp;
+	int i;
+
+	i = 0;
+	while(env_path[0][i])
+	{
+		tmp = env_path[0][i];
+		env_path[0][i] = ft_strjoin(env_path[0][i], "/");
+		free(tmp);
+		i++;
+	}
+}
+
 void	get_env_path(char ***env_path, char **envp)
 {
 	int	i;
@@ -201,6 +217,7 @@ void	get_env_path(char ***env_path, char **envp)
 		put_error(PATH_EXIST_ERROR);
 	*env_path = ft_split(envp[i] + ft_strlen("PATH="), ':');
 	check_malloc(env_path);
+	add_slash_eos(env_path);
 }
 
 // コマンドの数を取得する
@@ -259,6 +276,21 @@ void get_cmd_from_arg(char ***cmd_absolute_path, int argc, char **argv)
 	get_cmd_name_from_arg(cmd_absolute_path, argc, argv);
 }
 
+
+/* cmdにパスを加える
+ * cmd一つ一つに対して，にenv_pathを一つずつ結合していく．
+ * 結合したものが実行可能であるならば，それをコマンドの絶対パスとして返す.
+ * 実行可能なenv_pathが見つからなければ，エラーとする．
+ */
+void add_absolute_path_to_cmd(char ***cmd_absolute_path, char **env_path)
+{
+
+	// cmd一つ一つに対して，にenv_pathを一つずつ結合していく．
+	// 結合したものが実行可能であるならば，それをコマンドの絶対パスとして返す.
+	//
+}
+
+
 /*コマンドライン引数からcmdの絶対パスを取得する
  * ・cmdであるべきものを取得する
  * ・cmdにパスを加える
@@ -266,13 +298,10 @@ void get_cmd_from_arg(char ***cmd_absolute_path, int argc, char **argv)
 void	get_cmd_absolute_path(char ***cmd_absolute_path, int argc, char **argv, char **env_path)
 {
 	// コマンドライン引数からcmdであるべきものを取得する
-		// 実行ファイルでない，infileargv[1]でない，outfile argv[argc-1]でない．
-		// "here_doc"がない場合，argv[0](実行ファイル)，argv[1](infile)，argv[argc-1](outfile)以外
-		// "here_doc"がある場合，argv[0](実行ファイル)，argv[1](here_doc)，argv[2](LIMITTER)，argv[argc-1](outfile)以外であり，かつ，F_OKに失敗したもの
 	get_cmd_from_arg(cmd_absolute_path, argc, argv);
 	// cmdにパスを加える
 		// cmd一つ一つに対して，にenv_pathを一つずつ結合していき，それが実行可能であるならば，それをコマンドの絶対パスとして返す.実行可能なenv_pathが見つからなければ，エラーとする
-	// add_absolute_path_to_cmd();
+	add_absolute_path_to_cmd(cmd_absolute_path, env_path);
 }
 
 // char **envpによって環境変数を受け取ることができる
@@ -291,8 +320,8 @@ int	main(int argc, char **argv, char **envp)
 	get_cmd_absolute_path(&cmd_absolute_path, argc, argv, env_path);
 	check_arg(argc, argv);
 
-// for (int i = 0; env_path[i]; i++)
-// 	ft_printf("%s\n", env_path[i]);
+for (int i = 0; env_path[i]; i++)
+	ft_printf("%s\n", env_path[i]);
 
 for (int i = 0; cmd_absolute_path[i]; i++)
 	ft_printf("%s\n", cmd_absolute_path[i]);
