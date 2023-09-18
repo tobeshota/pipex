@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/18 11:04:55 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/18 12:15:38 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,11 @@ cc -Wall -Wextra -Werror main.c ../libft/libft.a -o pipex
 __attribute__((destructor)) static void destructor()
 {
 	system("leaks -q pipex");
+}
+
+int is_specified_here_doc(char **argv)
+{
+	return (!ft_strncmp(argv[1], "here_doc", ft_strlen("here_doc")));
 }
 
 void	all_free(char **ptr)
@@ -45,13 +50,22 @@ void	put_error(char *err_msg)
 	write(STDERR_FILENO, err_msg, ft_strlen(err_msg));
 }
 
-int	is_argc_valid(int argc)
+int	is_argc_valid(int argc, char **argv)
 {
-	if (argc < 5)
+	if (is_specified_here_doc(argv))
 	{
-		put_error(TOO_FEW_ARGC_ERROR);
-		return FALSE;
+		if (argc < 6)
+		{
+			put_error(TOO_FEW_ARGC_ERROR);
+			return FALSE;
+		}
 	}
+	else
+		if (argc < 5)
+		{
+			put_error(TOO_FEW_ARGC_ERROR);
+			return FALSE;
+		}
 	return TRUE;
 }
 
@@ -117,12 +131,6 @@ int	is_outfile_valid(char *outfile)
 	return TRUE;
 }
 
-int is_specified_here_doc(char **argv)
-{
-	return (!ft_strncmp(argv[1], "here_doc", ft_strlen("here_doc")));
-}
-
-
 char *get_infile(char **argv)
 {
 	char *infile;
@@ -159,14 +167,11 @@ int	is_argv_valid(int argc, char **argv)
 
 	infile = get_infile(argv);
 	outfile = get_outfile(argc, argv);
-// ft_printf("infile: %s\n", infile);
 	if (infile != INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC)
 		if(is_infile_valid(infile) == FALSE)
 				return FALSE;
 	if(is_outfile_valid(outfile) == FALSE)
 		return FALSE;
-	// if(is_valid_cmd() == FALSE)
-	// 	return FALSE;
 	return TRUE;
 }
 
@@ -176,7 +181,7 @@ int	is_argv_valid(int argc, char **argv)
  */
 void	check_arg(int argc, char **argv)
 {
-	if(is_argc_valid(argc) == FALSE)
+	if(is_argc_valid(argc, argv) == FALSE)
 		exit(1);
 	if(is_argv_valid(argc, argv) == FALSE)
 		exit(1);
