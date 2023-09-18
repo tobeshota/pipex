@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/17 20:18:10 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/18 09:45:12 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,7 +184,10 @@ void	check_arg(int argc, char **argv)
 void	check_malloc(void *ptr)
 {
 	if (ptr == NULL)
+	{
 		put_error(MALLOC_ERROR);
+		exit(1);
+	}
 }
 
 void	get_env_path(char ***env_path, char **envp)
@@ -207,11 +210,11 @@ int get_cmd_count(int argc, char **argv)
 	int i;
 
 	cmd_count = 0;
-	if(is_specified_here_doc(argv))
+	if (is_specified_here_doc(argv))
 		i = 3;
 	else
 		i = 2;
-	while(i < argc - 1)
+	while (i < argc - 1)
 	{
 		if (access(argv[i], F_OK))
 			cmd_count++;
@@ -220,18 +223,40 @@ int get_cmd_count(int argc, char **argv)
 	return cmd_count;
 }
 
+void get_cmd_name_from_arg(char ***cmd_absolute_path, int argc, char **argv)
+{
+	int arg_i;
+	int cmd_i;
+
+	if (is_specified_here_doc(argv))
+		arg_i = 3;
+	else
+		arg_i = 2;
+	cmd_i = 0;
+	while (arg_i < argc - 1)
+	{
+		if (access(argv[arg_i], F_OK))
+		{
+			cmd_absolute_path[0][cmd_i] = ft_strdup(argv[arg_i]);
+			check_malloc(cmd_absolute_path[0][cmd_i]);
+			cmd_i++;
+		}
+		arg_i++;
+	}
+	cmd_absolute_path[0][cmd_i] = NULL;
+}
+
 /* コマンドライン引数からcmdであるべきものを取得する
  * "here_doc"がない場合，argv[0](実行ファイル)，argv[1](infile)，argv[argc-1](outfile)以外を「cmdであるべきもの」として取得する
  * "here_doc"がある場合，argv[0](実行ファイル)，argv[1](here_doc)，argv[2](LIMITTER)，argv[argc-1](outfile)以外であり，かつ，F_OKに失敗したものを「cmdであるべきもの」として取得する
  */
 void get_cmd_from_arg(char ***cmd_absolute_path, int argc, char **argv)
 {
-	int cmd_count;
-	// コマンドの数を取得する
-	cmd_count = get_cmd_count(argc, argv);
-ft_printf("cmd_count: %d\n", cmd_count);
 	// コマンドの数+1（その次はNULL）ぶんcmd_absolute_pathの動的配列を確保する
+	*cmd_absolute_path = (char **)malloc(sizeof(char *) * (get_cmd_count(argc, argv) + 1));
+	check_malloc(*cmd_absolute_path);
 	// コマンドをcmd_absolute_pathに格納する
+	get_cmd_name_from_arg(cmd_absolute_path, argc, argv);
 }
 
 /*コマンドライン引数からcmdの絶対パスを取得する
@@ -265,15 +290,16 @@ int	main(int argc, char **argv, char **envp)
 	// コマンドライン引数からcmdの絶対パスを取得する
 	get_cmd_absolute_path(&cmd_absolute_path, argc, argv, env_path);
 	check_arg(argc, argv);
-// int i;
-// i = 0;
-// while(env_path[i])
-// {
+
+// for (int i = 0; env_path[i]; i++)
 // 	ft_printf("%s\n", env_path[i]);
-// 	i++;
-// }
+
+for (int i = 0; cmd_absolute_path[i]; i++)
+	ft_printf("%s\n", cmd_absolute_path[i]);
+
 	// pipexとしての処理をする
 	// pipex(argc, argv, envp, bin_path);
 	all_free(env_path);
+	all_free(cmd_absolute_path);
 // all_free(argv);
 }
