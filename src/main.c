@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/18 15:19:51 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/18 15:37:44 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -246,9 +246,9 @@ int get_cmd_count(int argc, char **argv)
 	return cmd_count;
 }
 
-int strlen_until_c(char *str, char c)
+size_t strlen_until_c(char *str, char c)
 {
-	int len;
+	size_t len;
 	len = 0;
 	while(str[len] != '\0' && str[len] != c)
 		len++;
