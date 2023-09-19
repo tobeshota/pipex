@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/18 12:15:38 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/19 12:50:56 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ int	is_argc_valid(int argc, char **argv)
 	{
 		if (argc < 6)
 		{
-			put_error(TOO_FEW_ARGC_ERROR);
+			put_error(TOO_FEW_ARGC_ERROR_IN_BONUS);
 			return FALSE;
 		}
 	}
@@ -136,12 +136,7 @@ char *get_infile(char **argv)
 	char *infile;
 
 	if (is_specified_here_doc(argv))
-	{
-		if (!access(argv[3], F_OK))
-			infile = argv[3];
-		else
-			infile = INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC;
-	}
+		infile = INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC;
 	else
 		infile = argv[1];
 	return infile;
@@ -333,10 +328,35 @@ void	get_cmd_absolute_path(char ***cmd_absolute_path, int argc, char **argv, cha
 	all_free(env_path);
 }
 
-// void pipex(int argc, char **argv, char **envp, char **cmd_absolute_path)
-// {
-// 	;
-// }
+/* 必要となる引数
+ * ■execve
+ * 	・環境変数
+ * 	・コマンドの絶対パス
+ * 	・コマンド(+オプション)(+ファイル)
+ * ■
+ */
+void pipex(int argc, char **argv, char **envp, char **cmd_absolute_path)
+{
+	// p_fd[0]およびp_fd[1]を用いるためにpipeを開く．
+	// pipeおよびexecveを用いるためにforkで現在のプロセス（親プロセス）を複製して新しいプロセス（子プロセス）を生成する．
+	// forkの出力値が0より小さい数だったら（子プロセスの生成に失敗したら），エラー終了する．
+	// forkの出力値が0だったら（子プロセスのpidが渡されたら），子プロセスを実行する．
+		// コマンドの入力先を指定する（コマンドの入力先fdを標準入力に変える）．
+			// はじめ　infile_fd					を標準入力に変える
+			// いつも　p_fd[0]（パイプの読み取り側）	を標準入力に変える
+		// コマンドの出力先fdを指定する（コマンドの出力先fdを標準出力に変える）
+			// いつも　p_fd[1]（パイプの書き込み側）	を標準出力に変える
+			// おわり　outfile_fd					を標準出力に変える
+		// execveでコマンドを実行する．
+	// forkの出力値が0より大きい数だったら（親プロセスのpidが渡されたら），親プロセスを実行する．
+}
+
+void proc_here_doc(char **argv)
+{
+	// p_fd[1]を用いるためにpipeを開く．パイプの書き込み側に書き込まれたデータはパイプの読み出し側から読み出されるまでカーネルでバッファリグされる．
+	// pipeを用いるためにfork()で現在のプロセス（親プロセス）を複製して新しいプロセス（子プロセス）を生成する．
+	// LIMITTERが来るまでhere_docの内容をgnlで読み取り，それをp_fd[1]（パイプの書き込み側．データの一時保存領域）に代入する．
+}
 
 int	main(int argc, char **argv, char **envp)
 {
@@ -349,8 +369,8 @@ int	main(int argc, char **argv, char **envp)
 	// コマンドライン引数からcmdの絶対パスを取得する
 	get_cmd_absolute_path(&cmd_absolute_path, argc, argv, envp);
 
-for (int i = 0; cmd_absolute_path[i]; i++)
-	ft_printf("%s\n", cmd_absolute_path[i]);
+	// here_docが指定されていたらhere_docの内容をgnlで読み取り，それをp_fd[1]に書き込む
+	proc_here_doc(argv);
 
 	// pipexとしての処理をする
 	// pipex(argc, argv, envp, cmd_absolute_path);
