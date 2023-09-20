@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipex.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: toshota <toshota@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 09:29:26 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/19 10:38:07 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/20 19:04:27 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,9 @@
 # define CMD_ERROR "command not found\n"
 # define TRUE 1
 # define FALSE 0
+# define INFILE	0
+# define OUTFILE	1
+# define OUTFILE_HERE_DOC	2
 
 # define INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC 0
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: toshota <toshota@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/20 16:31:23 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/20 19:11:53 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,26 +69,6 @@ int	is_argc_valid(int argc, char **argv)
 	return TRUE;
 }
 
-int	is_file_readable(char *file)
-{
-	if (access(file, R_OK))
-	{
-		put_error(PERMISSION_DENIED_ERROR);
-		return FALSE;
-	}
-	return TRUE;
-}
-
-int	is_file_writable(char *file)
-{
-	if (access(file, W_OK))
-	{
-		put_error(PERMISSION_DENIED_ERROR);
-		return FALSE;
-	}
-	return TRUE;
-}
-
 int is_file_exist(char *file)
 {
 	if (access(file, F_OK))
@@ -99,11 +79,18 @@ int is_file_exist(char *file)
 	return TRUE;
 }
 
-int	is_file_openable(char *file)
+int	is_file_openable(char *file, int file_type)
 {
 	int	fd;
 
-	fd = open(file, O_RDWR);
+	if (file_type == INFILE)
+		fd = open(file, O_RDONLY);
+	else if (file_type == OUTFILE)
+		fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU | S_IRWXG | S_IRWXO);
+	else if (file_type == OUTFILE_HERE_DOC)
+		fd = open(file, O_WRONLY | O_CREAT | O_APPEND, S_IRWXU | S_IRWXG | S_IRWXO);
+	else
+		fd = -1;
 	close(fd);
 	if (fd == -1)
 	{
@@ -115,18 +102,18 @@ int	is_file_openable(char *file)
 
 int	is_infile_valid(char *infile)
 {
-	if(is_file_openable(infile) == FALSE)
-		return FALSE;
-	if(is_file_readable(infile) == FALSE)
+	if (infile == INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC)
+		return TRUE;
+	if (is_file_openable(infile, INFILE) == FALSE)
 		return FALSE;
 	return TRUE;
 }
 
-int	is_outfile_valid(char *outfile)
+int	is_outfile_valid(char *infile, char *outfile)
 {
-	if(is_file_openable(outfile) == FALSE)
+	if (infile == INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC && is_file_openable(outfile, OUTFILE_HERE_DOC) == FALSE)
 		return FALSE;
-	if(is_file_writable(outfile) == FALSE)
+	if (infile != INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC && is_file_openable(outfile, OUTFILE) == FALSE)
 		return FALSE;
 	return TRUE;
 }
@@ -162,10 +149,9 @@ int	is_argv_valid(int argc, char **argv)
 
 	infile = get_infile(argv);
 	outfile = get_outfile(argc, argv);
-	if (infile != INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC)
-		if(is_infile_valid(infile) == FALSE)
-				return FALSE;
-	if(is_outfile_valid(outfile) == FALSE)
+	if (is_infile_valid(infile) == FALSE)
+		return FALSE;
+	if (is_outfile_valid(infile, outfile) == FALSE)
 		return FALSE;
 	return TRUE;
 }
@@ -316,12 +302,44 @@ int is_cmd_relative_path(char ***cmd_absolute_path, int cmd_i)
 	return FALSE;
 }
 
+int get_down_count_from_pwd(char *relative_path)
+{
+	int down_count_from_pwd;
+	down_count_from_pwd = 0;
+
+	while (ft_strnstr(relative_path, "../", ft_strlen(relative_path)))
+	{
+		down_count_from_pwd++;
+		relative_path += ft_strlen("../");
+	}
+ft_printf(">> %d\n", down_count_from_pwd);
+	return down_count_from_pwd;
+}
+
+void convert_relative_path_to_absolute_path(char *relative_path, char **envp)
+{
+	int		down_count_from_pwd;
+	char	**pwd_path;
+	// PWDを取得する
+	get_pwd_path(&pwd_path, envp);
+ft_printf("*pwd_path: %s\n", *pwd_path);
+
+	// PWDから何段下がるかの数を調べる（相対パスにいくつ"../"が含まれるのかを調べる）
+	down_count_from_pwd = get_down_count_from_pwd(relative_path);
+	// PWDから何段下がるかの数ぶんPWDを変更し，それをpathに加える
+
+	// cmd_absolute_pathにpathを加える
+
+	// PWDをfreeする
+	all_free(pwd_path);
+}
+
 /* cmdにパスを加える
  * cmd一つ一つに対して，にenv_pathを一つずつ結合していく．
  * 結合したものが実行可能であるならば，それをコマンドの絶対パスとして返す.
  * 実行可能なenv_pathが見つからなければ，エラーとする．
  */
-void add_absolute_path_to_cmd_name(char ***cmd_absolute_path, char **env_path)
+void add_absolute_path_to_cmd_name(char ***cmd_absolute_path, char **env_path, char **envp)
 {
 	int cmd_i;
 	int env_i;
@@ -330,15 +348,16 @@ void add_absolute_path_to_cmd_name(char ***cmd_absolute_path, char **env_path)
 	cmd_i = -1;
 	while(cmd_absolute_path[0][++cmd_i])
 	{
+		ft_printf("here:\t%s\t%d\n", cmd_absolute_path[0][cmd_i], is_cmd_relative_path(cmd_absolute_path, cmd_i));
 		env_i = 0;
-		if (is_cmd_alreadly_absollute_path(cmd_absolute_path, cmd_i))
-			continue;
 		if (is_cmd_relative_path(cmd_absolute_path, cmd_i))
 		{
-			ft_printf("relative\n");
-			// 相対パスから絶対パスに変換する();
+			// 相対パスから絶対パスに変換する
+			convert_relative_path_to_absolute_path(cmd_absolute_path[0][cmd_i], envp);
 			continue;
 		}
+		if (is_cmd_alreadly_absollute_path(cmd_absolute_path, cmd_i))
+			continue;
 		while (env_path[env_i])
 		{
 			tmp = ft_strjoin(env_path[env_i], cmd_absolute_path[0][cmd_i]);
@@ -364,16 +383,12 @@ void add_absolute_path_to_cmd_name(char ***cmd_absolute_path, char **env_path)
 void	get_cmd_absolute_path(char ***cmd_absolute_path, int argc, char **argv, char **envp)
 {
 	char	**env_path;
-	char	**pwd_path;
 
 	get_env_path(&env_path, envp);
-	get_pwd_path(&pwd_path, envp);
 // env_path = ft_split("PATH=/Library/Frameworks/Python.framework/Versions/3.6/bin/:/Users/tobeshota/anaconda3/condabin/:/opt/homebrew/opt/node@18/bin/:/Users/tobeshota/.cargo/bin/:/usr/local/Qt-5.15.10/bin/:/opt/homebrew/opt/pyqt@5/5 5.15.7_2/bin/:/opt/homebrew/opt/qt@5/bin/:/Users/tobeshota/.nodebrew/current/bin/:/Users/tobeshota/.pyenv/shims/:/Users/tobeshota/.pyenv/bin/:/Library/Frameworks/Python.framework/Versions/3.10/bin/:/usr/local/bin/:/usr/bin/:/bin/:/usr/sbin/:/sbin/:/opt/X11/bin/:/Users/tobeshota/workspace/command", ':');
-ft_printf("*pwd_path: %s\n", *pwd_path);
 	get_cmd_name_from_arg(cmd_absolute_path, argc, argv);
-	add_absolute_path_to_cmd_name(cmd_absolute_path, env_path);
+	add_absolute_path_to_cmd_name(cmd_absolute_path, env_path, envp);
 	all_free(env_path);
-	all_free(pwd_path);
 }
 
 /* 必要となる引数
@@ -413,7 +428,7 @@ int	main(int argc, char **argv, char **envp)
 // argv = ft_split("./pipex infile ls cat brew outfile", ' ');
 // argc = 6;
 
-	// check_arg(argc, argv);
+	check_arg(argc, argv);
 	// コマンドライン引数からcmdの絶対パスを取得する
 	get_cmd_absolute_path(&cmd_absolute_path, argc, argv, envp);
 
