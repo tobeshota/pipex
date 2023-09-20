@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/20 10:52:11 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/20 16:31:23 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -191,17 +191,17 @@ void	check_malloc(void *ptr)
 	}
 }
 
-// env_pathそれぞれの文字列の終わりに"/"を加える．
-void add_slash_eos(char ***env_path)
+// pathそれぞれの文字列の終わりに"/"を加える．
+void add_slash_eos(char ***path)
 {
 	char *tmp;
 	int i;
 
 	i = 0;
-	while(env_path[0][i])
+	while(path[0][i])
 	{
-		tmp = env_path[0][i];
-		env_path[0][i] = ft_strjoin(env_path[0][i], "/");
+		tmp = path[0][i];
+		path[0][i] = ft_strjoin(path[0][i], "/");
 		free(tmp);
 		i++;
 	}
@@ -226,6 +226,20 @@ void	get_env_path(char ***env_path, char **envp)
 	*env_path = ft_split(envp[i] + ft_strlen("PATH="), ':');
 	check_malloc(env_path);
 	add_slash_eos(env_path);
+}
+
+void	get_pwd_path(char ***pwd_path, char **envp)
+{
+	int	i;
+
+	i = 0;
+	while (envp[i] && ft_strncmp(envp[i], "PWD=", ft_strlen("PWD=")))
+		i++;
+	if (envp[i] == NULL)
+		put_error(PATH_EXIST_ERROR);
+	*pwd_path = ft_split(envp[i] + ft_strlen("PWD="), ':');
+	check_malloc(pwd_path);
+	add_slash_eos(pwd_path);
 }
 
 // コマンドの数を取得する
@@ -295,6 +309,13 @@ void check_cmd(char *env_path)
 	}
 }
 
+int is_cmd_relative_path(char ***cmd_absolute_path, int cmd_i)
+{
+	if (ft_strnstr(cmd_absolute_path[0][cmd_i], "./", ft_strlen(cmd_absolute_path[0][cmd_i])))
+		return TRUE;
+	return FALSE;
+}
+
 /* cmdにパスを加える
  * cmd一つ一つに対して，にenv_pathを一つずつ結合していく．
  * 結合したものが実行可能であるならば，それをコマンドの絶対パスとして返す.
@@ -312,6 +333,12 @@ void add_absolute_path_to_cmd_name(char ***cmd_absolute_path, char **env_path)
 		env_i = 0;
 		if (is_cmd_alreadly_absollute_path(cmd_absolute_path, cmd_i))
 			continue;
+		if (is_cmd_relative_path(cmd_absolute_path, cmd_i))
+		{
+			ft_printf("relative\n");
+			// 相対パスから絶対パスに変換する();
+			continue;
+		}
 		while (env_path[env_i])
 		{
 			tmp = ft_strjoin(env_path[env_i], cmd_absolute_path[0][cmd_i]);
@@ -337,12 +364,16 @@ void add_absolute_path_to_cmd_name(char ***cmd_absolute_path, char **env_path)
 void	get_cmd_absolute_path(char ***cmd_absolute_path, int argc, char **argv, char **envp)
 {
 	char	**env_path;
+	char	**pwd_path;
 
 	get_env_path(&env_path, envp);
+	get_pwd_path(&pwd_path, envp);
 // env_path = ft_split("PATH=/Library/Frameworks/Python.framework/Versions/3.6/bin/:/Users/tobeshota/anaconda3/condabin/:/opt/homebrew/opt/node@18/bin/:/Users/tobeshota/.cargo/bin/:/usr/local/Qt-5.15.10/bin/:/opt/homebrew/opt/pyqt@5/5 5.15.7_2/bin/:/opt/homebrew/opt/qt@5/bin/:/Users/tobeshota/.nodebrew/current/bin/:/Users/tobeshota/.pyenv/shims/:/Users/tobeshota/.pyenv/bin/:/Library/Frameworks/Python.framework/Versions/3.10/bin/:/usr/local/bin/:/usr/bin/:/bin/:/usr/sbin/:/sbin/:/opt/X11/bin/:/Users/tobeshota/workspace/command", ':');
+ft_printf("*pwd_path: %s\n", *pwd_path);
 	get_cmd_name_from_arg(cmd_absolute_path, argc, argv);
 	add_absolute_path_to_cmd_name(cmd_absolute_path, env_path);
 	all_free(env_path);
+	all_free(pwd_path);
 }
 
 /* 必要となる引数
@@ -382,7 +413,7 @@ int	main(int argc, char **argv, char **envp)
 // argv = ft_split("./pipex infile ls cat brew outfile", ' ');
 // argc = 6;
 
-	check_arg(argc, argv);
+	// check_arg(argc, argv);
 	// コマンドライン引数からcmdの絶対パスを取得する
 	get_cmd_absolute_path(&cmd_absolute_path, argc, argv, envp);
 
