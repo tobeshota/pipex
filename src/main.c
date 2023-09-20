@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/19 15:55:41 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/20 10:52:11 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -207,6 +207,13 @@ void add_slash_eos(char ***env_path)
 	}
 }
 
+int is_cmd_alreadly_absollute_path(char ***cmd_absolute_path, int cmd_i)
+{
+	if (ft_strchr(cmd_absolute_path[0][cmd_i], '/'))
+		return TRUE;
+	return FALSE;
+}
+
 void	get_env_path(char ***env_path, char **envp)
 {
 	int	i;
@@ -234,7 +241,7 @@ int get_cmd_count(int argc, char **argv)
 		i = 2;
 	while (i < argc - 1)
 	{
-		if (access(argv[i], F_OK))
+		if ((is_cmd_alreadly_absollute_path(&argv, i) && !access(argv[i], X_OK)) || access(argv[i], F_OK))
 			cmd_count++;
 		i++;
 	}
@@ -268,7 +275,7 @@ void get_cmd_name_from_arg(char ***cmd_absolute_path, int argc, char **argv)
 	cmd_i = 0;
 	while (arg_i < argc - 1)
 	{
-		if (access(argv[arg_i], F_OK))
+		if ((is_cmd_alreadly_absollute_path(&argv, arg_i) && !access(argv[arg_i], X_OK)) || access(argv[arg_i], F_OK))
 		{
 			cmd_absolute_path[0][cmd_i] = ft_substr(argv[arg_i], 0, strlen_until_c(argv[arg_i], ' '));
 			check_malloc(cmd_absolute_path[0][cmd_i]);
@@ -299,10 +306,12 @@ void add_absolute_path_to_cmd_name(char ***cmd_absolute_path, char **env_path)
 	int env_i;
 	char *tmp;
 
-	cmd_i = 0;
-	while(cmd_absolute_path[0][cmd_i])
+	cmd_i = -1;
+	while(cmd_absolute_path[0][++cmd_i])
 	{
 		env_i = 0;
+		if (is_cmd_alreadly_absollute_path(cmd_absolute_path, cmd_i))
+			continue;
 		while (env_path[env_i])
 		{
 			tmp = ft_strjoin(env_path[env_i], cmd_absolute_path[0][cmd_i]);
@@ -317,7 +326,6 @@ void add_absolute_path_to_cmd_name(char ***cmd_absolute_path, char **env_path)
 			env_i++;
 		}
 		check_cmd(env_path[env_i]);
-		cmd_i++;
 	}
 }
 
@@ -377,6 +385,9 @@ int	main(int argc, char **argv, char **envp)
 	check_arg(argc, argv);
 	// コマンドライン引数からcmdの絶対パスを取得する
 	get_cmd_absolute_path(&cmd_absolute_path, argc, argv, envp);
+
+for (int i = 0; cmd_absolute_path[i]; i++)
+	ft_printf("%s\n", cmd_absolute_path[i]);
 
 	// here_docが指定されていたらhere_docの内容をgnlで読み取り，それをp_fd[1]に書き込む
 	proc_here_doc(argv);
