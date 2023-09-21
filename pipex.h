@@ -6,12 +6,24 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 09:29:26 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/21 09:10:04 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/21 20:10:44 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef PIPEX_H
 # define PIPEX_H
+
+# include <sys/types.h>
+
+typedef struct s_data
+{
+	pid_t	pid_1;
+	pid_t	pid_2;
+	int		p_fd[2];
+	int		infile_fd;
+	int		outfile_fd;
+	char	**cmd_absolute_path;
+}			t_data;
 
 # define TOO_FEW_ARGC_ERROR \
 	"argc at least 5 as follows: \
@@ -27,10 +39,10 @@
 # define CMD_ERROR "command not found\n"
 # define TRUE 1
 # define FALSE 0
-# define INFILE	0
-# define OUTFILE	1
-# define OUTFILE_HERE_DOC	2
-# define EXECUTABLE_DFILE	3
+# define INFILE 0
+# define OUTFILE 1
+# define OUTFILE_HERE_DOC 2
+# define EXECUTABLE_DFILE 3
 
 # define INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC 0
 

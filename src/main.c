@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/21 11:39:03 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/21 20:14:33 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -444,12 +444,15 @@ void	get_cmd_absolute_path(char ***cmd_absolute_path, int argc, char **argv, cha
  * 	・コマンド(+オプション)(+ファイル)
  * ■
  */
-// void pipex(int argc, char **argv, char **envp, char **cmd_absolute_path)
-// {
+void pipex(int argc, char **argv, char **envp, char **cmd_absolute_path)
+{
+	int p_fd[2];
+
+	execve(cmd_absolute_path[1], argv, envp);
 	// p_fd[0]およびp_fd[1]を用いるためにpipeを開く．
 	// pipeおよびexecveを用いるためにforkで現在のプロセス（親プロセス）を複製して新しいプロセス（子プロセス）を生成する．
-	// forkの出力値が0より小さい数だったら（子プロセスの生成に失敗したら），エラー終了する．
-	// forkの出力値が0だったら（子プロセスのpidが渡されたら），子プロセスを実行する．
+	// <>forkの出力値が0より小さい数だったら（子プロセスの生成に失敗したら），エラー終了する．
+	// <>forkの出力値が0だったら（子プロセスのpidが渡されたら），子プロセスを実行する．
 		// コマンドの入力先を指定する（コマンドの入力先fdを標準入力に変える）．
 			// はじめ　infile_fd					を標準入力に変える
 			// いつも　p_fd[0]（パイプの読み取り側）	を標準入力に変える
@@ -457,8 +460,8 @@ void	get_cmd_absolute_path(char ***cmd_absolute_path, int argc, char **argv, cha
 			// いつも　p_fd[1]（パイプの書き込み側）	を標準出力に変える
 			// おわり　outfile_fd					を標準出力に変える
 		// execveでコマンドを実行する．
-	// forkの出力値が0より大きい数だったら（親プロセスのpidが渡されたら），親プロセスを実行する．
-// }
+	// <>forkの出力値が0より大きい数だったら（親プロセスのpidが渡されたら），親プロセスを実行する．
+}
 
 // void proc_here_doc(char **argv)
 // {
@@ -469,23 +472,24 @@ void	get_cmd_absolute_path(char ***cmd_absolute_path, int argc, char **argv, cha
 
 int	main(int argc, char **argv, char **envp)
 {
-	char 	**cmd_absolute_path;
+	t_data data;
+	// char 	**cmd_absolute_path;
 
 // argv = ft_split("./pipex infile ls cat brew outfile", ' ');
 // argc = 6;
 
 	check_arg(argc, argv);
 	// コマンドライン引数からcmdの絶対パスを取得する
-	get_cmd_absolute_path(&cmd_absolute_path, argc, argv, envp);
+	get_cmd_absolute_path(&data.cmd_absolute_path, argc, argv, envp);
 
-for (int i = 0; cmd_absolute_path[i]; i++)
-	ft_printf(">>> %s\n", cmd_absolute_path[i]);
+for (int i = 0; data.cmd_absolute_path[i]; i++)
+	ft_printf(">>> %s\n", data.cmd_absolute_path[i]);
 
 	// here_docが指定されていたらhere_docの内容をgnlで読み取り，それをp_fd[1]に書き込む
 	// proc_here_doc(argv);
 
 	// pipexとしての処理をする
 	// pipex(argc, argv, envp, cmd_absolute_path);
-	all_free(cmd_absolute_path);
+	all_free(data.cmd_absolute_path);
 // all_free(argv);
 }
