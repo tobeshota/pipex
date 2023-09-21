@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/21 20:14:33 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/21 22:33:36 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ void	put_error(char *err_msg)
 	write(STDERR_FILENO, err_msg, ft_strlen(err_msg));
 }
 
-int	is_argc_valid(int argc, char **argv)
+int is_argc_valid(int argc, char **argv)
 {
 	if (is_specified_here_doc(argv))
 	{
@@ -80,7 +80,7 @@ int is_file_exist(char *file)
 	return TRUE;
 }
 
-int	is_file_openable(char *file, int file_type)
+int	open_file(char *file, int file_type)
 {
 	int	fd;
 
@@ -92,29 +92,38 @@ int	is_file_openable(char *file, int file_type)
 		fd = open(file, O_WRONLY | O_CREAT | O_APPEND, S_IRWXU | S_IRWXG | S_IRWXO);
 	else
 		fd = -1;
-	close(fd);
 	if (fd == -1)
 	{
 		put_error(FILE_OPEN_ERROR);
-		return FALSE;
+		exit(1);
 	}
-	return TRUE;
+	return fd;
 }
 
 int	is_infile_valid(char *infile)
 {
+	int fd;
+
 	if (infile == INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC)
 		return TRUE;
-	if (is_file_openable(infile, INFILE) == FALSE)
+	else
+		fd = open_file(infile, INFILE);
+	close(fd);
+	if (fd == -1)
 		return FALSE;
 	return TRUE;
 }
 
 int	is_outfile_valid(char *infile, char *outfile)
 {
-	if (infile == INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC && is_file_openable(outfile, OUTFILE_HERE_DOC) == FALSE)
-		return FALSE;
-	if (infile != INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC && is_file_openable(outfile, OUTFILE) == FALSE)
+	int fd;
+
+	if (infile == INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC)
+		fd = open_file(outfile, OUTFILE_HERE_DOC);
+	else
+		fd = open_file(outfile, OUTFILE);
+	close(fd);
+	if(fd == -1)
 		return FALSE;
 	return TRUE;
 }
@@ -130,35 +139,9 @@ char *get_infile(char **argv)
 	return infile;
 }
 
-/* ■ファイルおよびコマンドは適切なものであるかを確かめる
- * 	・入力用ファイルは読み取り可能であり，かつ，ディレクトリでないかを確かめる
- * 	・出力用ファイルは書き込み可能であり，かつ，ディレクトリでないかを確かめる
- * 	・コマンドが存在するかを確かめる（command not foundとならないかを調べる）
- */
-int	is_argv_valid(int argc, char **argv)
+char *get_outfile(int argc, char **argv)
 {
-	char *infile;
-	char *outfile;
-
-	infile = get_infile(argv);
-	outfile = argv[argc - 1];
-	if (is_infile_valid(infile) == FALSE)
-		return FALSE;
-	if (is_outfile_valid(infile, outfile) == FALSE)
-		return FALSE;
-	return TRUE;
-}
-
-/* コマンドライン引数が適切であるかを確かめる
- * ・コマンドライン引数の数は5個以上あるかを確かめる
- * ・ファイルおよびコマンドは適切なものであるかを確かめる
- */
-void	check_arg(int argc, char **argv)
-{
-	if(is_argc_valid(argc, argv) == FALSE)
-		exit(1);
-	if(is_argv_valid(argc, argv) == FALSE)
-		exit(1);
+	return argv[argc - 1];
 }
 
 void	check_malloc(void *ptr)
@@ -437,6 +420,71 @@ void	get_cmd_absolute_path(char ***cmd_absolute_path, int argc, char **argv, cha
 	all_free(env_path);
 }
 
+void proc_here_doc(char **argv)
+{
+	// p_fd[1]を用いるためにpipeを開く．パイプの書き込み側に書き込まれたデータはパイプの読み出し側から読み出されるまでカーネルでバッファリグされる．
+	// pipeを用いるためにfork()で現在のプロセス（親プロセス）を複製して新しいプロセス（子プロセス）を生成する．
+	// LIMITTERが来るまでhere_docの内容をgnlで読み取り，それをp_fd[1]（パイプの書き込み側．データの一時保存領域）に代入する．
+}
+
+/* ■ファイルおよびコマンドは適切なものであるかを確かめる
+ * 	・入力用ファイルは読み取り可能であり，かつ，ディレクトリでないかを確かめる
+ * 	・出力用ファイルは書き込み可能であり，かつ，ディレクトリでないかを確かめる
+ * 	・コマンドが存在するかを確かめる（command not foundとならないかを調べる）
+ */
+int	is_argv_valid(int argc, char **argv)
+{
+	if (is_infile_valid(get_infile(argv)) == FALSE)
+		return FALSE;
+	if (is_outfile_valid(get_infile(argv), get_outfile(argc, argv)) == FALSE)
+		return FALSE;
+	return TRUE;
+}
+
+void get_infile_fd(int argc, char **argv, int *infile_fd)
+{
+	char *infile;
+
+	infile = get_infile(argv);
+	if (infile == INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC)
+		// here_docが指定されていたらhere_docの内容をgnlで読み取り，それをp_fd[1]に書き込む
+		proc_here_doc(argv);
+	else
+		*infile_fd = open_file(infile, INFILE);
+}
+
+void get_outfile_fd(int argc, char **argv, int *outfile_fd)
+{
+	char *outfile;
+
+	outfile = argv[argc - 1];
+	if (is_specified_here_doc(argv))
+		*outfile_fd = open_file(outfile, OUTFILE_HERE_DOC);
+	else
+		*outfile_fd = open_file(outfile, OUTFILE);
+}
+
+/* コマンドライン引数が適切であるかを確かめる
+ * ・コマンドライン引数の数は5個以上あるかを確かめる
+ * ・コマンドライン引数の要素は適切なものであるかを確かめる
+ */
+void check_arg(int argc, char **argv)
+{
+	if (is_argc_valid(argc, argv) == FALSE)
+		exit(1);
+	if (is_argv_valid(argc, argv) == FALSE)
+		exit(1);
+}
+
+void	get_data(int argc, char **argv, t_data *data, char **envp)
+{
+	get_infile_fd(argc, argv, &data->infile_fd);
+	get_outfile_fd(argc, argv, &data->outfile_fd);
+	// コマンドライン引数からcmdの絶対パスを取得する
+	get_cmd_absolute_path(&data->cmd_absolute_path, argc, argv, envp);
+}
+
+
 /* 必要となる引数
  * ■execve
  * 	・環境変数
@@ -463,30 +511,18 @@ void pipex(int argc, char **argv, char **envp, char **cmd_absolute_path)
 	// <>forkの出力値が0より大きい数だったら（親プロセスのpidが渡されたら），親プロセスを実行する．
 }
 
-// void proc_here_doc(char **argv)
-// {
-	// p_fd[1]を用いるためにpipeを開く．パイプの書き込み側に書き込まれたデータはパイプの読み出し側から読み出されるまでカーネルでバッファリグされる．
-	// pipeを用いるためにfork()で現在のプロセス（親プロセス）を複製して新しいプロセス（子プロセス）を生成する．
-	// LIMITTERが来るまでhere_docの内容をgnlで読み取り，それをp_fd[1]（パイプの書き込み側．データの一時保存領域）に代入する．
-// }
-
 int	main(int argc, char **argv, char **envp)
 {
 	t_data data;
-	// char 	**cmd_absolute_path;
 
 // argv = ft_split("./pipex infile ls cat brew outfile", ' ');
 // argc = 6;
 
 	check_arg(argc, argv);
-	// コマンドライン引数からcmdの絶対パスを取得する
-	get_cmd_absolute_path(&data.cmd_absolute_path, argc, argv, envp);
+	get_data(argc, argv, &data, envp);
 
 for (int i = 0; data.cmd_absolute_path[i]; i++)
 	ft_printf(">>> %s\n", data.cmd_absolute_path[i]);
-
-	// here_docが指定されていたらhere_docの内容をgnlで読み取り，それをp_fd[1]に書き込む
-	// proc_here_doc(argv);
 
 	// pipexとしての処理をする
 	// pipex(argc, argv, envp, cmd_absolute_path);
