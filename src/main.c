@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/21 22:33:36 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/21 22:56:15 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,11 @@ void	put_error(char *err_msg)
 
 int is_argc_valid(int argc, char **argv)
 {
+	if (argc < 5)
+	{
+		put_error(TOO_FEW_ARGC_ERROR);
+		return FALSE;
+	}
 	if (is_specified_here_doc(argv))
 	{
 		if (argc < 6)
@@ -61,12 +66,6 @@ int is_argc_valid(int argc, char **argv)
 			return FALSE;
 		}
 	}
-	else
-		if (argc < 5)
-		{
-			put_error(TOO_FEW_ARGC_ERROR);
-			return FALSE;
-		}
 	return TRUE;
 }
 
@@ -443,25 +442,19 @@ int	is_argv_valid(int argc, char **argv)
 
 void get_infile_fd(int argc, char **argv, int *infile_fd)
 {
-	char *infile;
-
-	infile = get_infile(argv);
-	if (infile == INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC)
+	if (is_specified_here_doc(argv))
 		// here_docが指定されていたらhere_docの内容をgnlで読み取り，それをp_fd[1]に書き込む
 		proc_here_doc(argv);
 	else
-		*infile_fd = open_file(infile, INFILE);
+		*infile_fd = open_file(get_infile(argv), INFILE);
 }
 
 void get_outfile_fd(int argc, char **argv, int *outfile_fd)
 {
-	char *outfile;
-
-	outfile = argv[argc - 1];
 	if (is_specified_here_doc(argv))
-		*outfile_fd = open_file(outfile, OUTFILE_HERE_DOC);
+		*outfile_fd = open_file(get_outfile(argc, argv), OUTFILE_HERE_DOC);
 	else
-		*outfile_fd = open_file(outfile, OUTFILE);
+		*outfile_fd = open_file(get_outfile(argc, argv), OUTFILE);
 }
 
 /* コマンドライン引数が適切であるかを確かめる
@@ -480,7 +473,6 @@ void	get_data(int argc, char **argv, t_data *data, char **envp)
 {
 	get_infile_fd(argc, argv, &data->infile_fd);
 	get_outfile_fd(argc, argv, &data->outfile_fd);
-	// コマンドライン引数からcmdの絶対パスを取得する
 	get_cmd_absolute_path(&data->cmd_absolute_path, argc, argv, envp);
 }
 
