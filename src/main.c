@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/21 10:04:10 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/21 11:21:00 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -186,7 +186,7 @@ void add_slash_eos(char ***path)
 
 int is_cmd_alreadly_absollute_path(char ***cmd_absolute_path, int cmd_i)
 {
-	// "/"が文頭になく，かつ，"/"が文中にあるならば，それは絶対パスである
+	// "/"が文頭にあり，かつ，"/"が文中にあるならば，それは絶対パスである
 	if (cmd_absolute_path[0][cmd_i][0] == '/' && ft_strchr(&cmd_absolute_path[0][cmd_i][1], '/'))
 		return TRUE;
 	return FALSE;
@@ -206,7 +206,7 @@ void	get_env_path(char ***env_path, char **envp)
 	add_slash_eos(env_path);
 }
 
-void	get_pwd_path(char ***pwd_path, char **envp)
+void	get_pwd(char ***pwd_path, char **envp)
 {
 	int	i;
 
@@ -233,7 +233,6 @@ int get_cmd_count(int argc, char **argv)
 		i = 2;
 	while (i < argc - 1)
 	{
-		ft_printf("argv[%d]:\t%s\t%d\n", i, argv[i], (!access(argv[i], X_OK) || access(argv[i], F_OK)));
 		// argv[i]は存在する読み取りファイル，存在する書き込みファイル，存在する実行ファイルのいずれかである．
 		// argv[i]が実行可能であるとき，それは実行ファイルである．
 		// また，パスが省略されうる（絶対パスや相対パスで指定されるという意味ではない）ファイルは実行ファイルのみである．
@@ -315,21 +314,69 @@ int get_down_count_from_pwd(char *relative_path)
 	return down_count_from_pwd;
 }
 
-void convert_relative_path_to_absolute_path(char *relative_path, char **envp)
+// 文字列 s 中に n 番目に文字 c が現れた位置へのポインターを返す
+char	*ft_strrnchr(const char *s, int c, int n)
+{
+	char	ch;
+	int		i;
+	int		count;
+
+	ch = (char)c;
+	i = ft_strlen(s);
+	count = 0;
+	while (i >= 0)
+	{
+		if (s[i] == ch)
+		{
+			if (count == n)
+				return ((char *)&s[i]);
+			else
+				count++;
+		}
+		i--;
+	}
+	return (0);
+}
+
+// PWDから何段下がるかの数ぶんPWDを変更する
+// 文末からn個'/'が来るまでpwd_pathを消す
+char *steps_down(char ***pwd_path, int down_count_from_pwd)
+{
+	int delete_len;
+	char *tmp;
+	char *pwd_for_relative_path;
+
+	delete_len = ft_strlen(ft_strrnchr(pwd_path[0][0], '/', down_count_from_pwd) + 1);
+	pwd_for_relative_path = ft_substr(pwd_path[0][0], 0, ft_strlen(pwd_path[0][0]) - delete_len);
+	ft_printf("pwd_for_relative_path:\t%s\n", pwd_for_relative_path);
+	return pwd_for_relative_path;
+}
+
+void convert_relative_path_to_absolute_path(char ***cmd_absolute_path, int cmd_i, char **envp)
 {
 	int		down_count_from_pwd;
-	char	**pwd_path;
+	char	*tmp;
+	char	**pwd;
+	char	*pwd_for_relative_path;
+
 	// PWDを取得する
-	get_pwd_path(&pwd_path, envp);
+	get_pwd(&pwd, envp);
+
+// ft_printf("■■■▶︎%s is relative path◀︎■■■\n", cmd_absolute_path[0][cmd_i]);
 
 	// PWDから何段下がるかの数を調べる（相対パスにいくつ"../"が含まれるのかを調べる）
-	down_count_from_pwd = get_down_count_from_pwd(relative_path);
-	// PWDから何段下がるかの数ぶんPWDを変更し，それをpathに加える
+	down_count_from_pwd = get_down_count_from_pwd(cmd_absolute_path[0][cmd_i]);
+ft_printf("■■■▶︎%s is %d steps down from pwd◀︎■■■\n", cmd_absolute_path[0][cmd_i], down_count_from_pwd);
+	// PWDから何段下がるかの数ぶんPWDを変更する
+	pwd_for_relative_path = steps_down(&pwd, down_count_from_pwd);
 
 	// cmd_absolute_pathにpathを加える
-
+	tmp = cmd_absolute_path[0][cmd_i];
+	cmd_absolute_path[0][cmd_i] = ft_strjoin(pwd_for_relative_path, cmd_absolute_path[0][cmd_i]);
+	free(tmp);
 	// PWDをfreeする
-	all_free(pwd_path);
+	all_free(pwd);
+	free(pwd_for_relative_path);
 }
 
 /* cmdにパスを加える
@@ -350,7 +397,7 @@ void add_absolute_path_to_cmd_name(char ***cmd_absolute_path, char **env_path, c
 		if (is_cmd_relative_path(cmd_absolute_path, cmd_i))
 		{
 			// 相対パスから絶対パスに変換する
-			convert_relative_path_to_absolute_path(cmd_absolute_path[0][cmd_i], envp);
+			convert_relative_path_to_absolute_path(cmd_absolute_path, cmd_i, envp);
 			continue;
 		}
 		if (is_cmd_alreadly_absollute_path(cmd_absolute_path, cmd_i))
