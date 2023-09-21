@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/21 09:58:13 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/21 10:04:10 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@ gcc -g main.c ../libft/libft.a -o pipex
 
 cc -Wall -Wextra -Werror main.c ../libft/libft.a -o pipex
 ./pipex infile "ls -a" cat ../../a.out outfile
+./pipex infile "ls -a" brew /bin/cat ../../a.out fuga/a.out outfile
 ./pipex here_doc wow ls cat outfile
 */
 #include "../libft/libft.h"
@@ -273,7 +274,7 @@ void get_cmd_name_from_arg(char ***cmd_absolute_path, int argc, char **argv)
 	cmd_i = 0;
 	while (arg_i < argc - 1)
 	{
-		if ((is_cmd_alreadly_absollute_path(&argv, arg_i) && !access(argv[arg_i], X_OK)) || access(argv[arg_i], F_OK))
+		if (!access(argv[arg_i], X_OK) || access(argv[arg_i], F_OK))
 		{
 			cmd_absolute_path[0][cmd_i] = ft_substr(argv[arg_i], 0, strlen_until_c(argv[arg_i], ' '));
 			check_malloc(cmd_absolute_path[0][cmd_i]);
