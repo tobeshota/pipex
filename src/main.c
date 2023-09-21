@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/21 11:21:00 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/21 11:39:03 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,8 @@ int	is_file_openable(char *file, int file_type)
 		fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU | S_IRWXG | S_IRWXO);
 	else if (file_type == OUTFILE_HERE_DOC)
 		fd = open(file, O_WRONLY | O_CREAT | O_APPEND, S_IRWXU | S_IRWXG | S_IRWXO);
+	else
+		fd = -1;
 	close(fd);
 	if (fd == -1)
 	{
@@ -242,7 +244,6 @@ int get_cmd_count(int argc, char **argv)
 			cmd_count++;
 		i++;
 	}
-	ft_printf("cmd_count:\t%d\n", cmd_count);
 	return cmd_count;
 }
 
@@ -340,41 +341,43 @@ char	*ft_strrnchr(const char *s, int c, int n)
 
 // PWDから何段下がるかの数ぶんPWDを変更する
 // 文末からn個'/'が来るまでpwd_pathを消す
-char *steps_down(char ***pwd_path, int down_count_from_pwd)
+char *get_pwd_for_relative_path(char ***pwd_path, int down_count_from_pwd)
 {
 	int delete_len;
-	char *tmp;
-	char *pwd_for_relative_path;
 
 	delete_len = ft_strlen(ft_strrnchr(pwd_path[0][0], '/', down_count_from_pwd) + 1);
-	pwd_for_relative_path = ft_substr(pwd_path[0][0], 0, ft_strlen(pwd_path[0][0]) - delete_len);
-	ft_printf("pwd_for_relative_path:\t%s\n", pwd_for_relative_path);
-	return pwd_for_relative_path;
+	return ft_substr(pwd_path[0][0], 0, ft_strlen(pwd_path[0][0]) - delete_len);
 }
 
+void delete_relative_path(char ***cmd_absolute_path, int cmd_i)
+{
+	char *tmp;
+	tmp = cmd_absolute_path[0][cmd_i];
+	cmd_absolute_path[0][cmd_i] = ft_strtrim(cmd_absolute_path[0][cmd_i], "../");
+	free(tmp);
+	tmp = cmd_absolute_path[0][cmd_i];
+	cmd_absolute_path[0][cmd_i] = ft_strtrim(cmd_absolute_path[0][cmd_i], "./");
+	free(tmp);
+}
+
+/* 相対パスから絶対パスに変換する
+ * ・PWDを取得する
+ * ・PWDを相対パスで指定された段数ぶん変更する
+ * ・cmd_absolute_pathから相対パスの部分（"../"や"./"）を削除する
+ * ・cmd_absolute_pathにpathを加える
+ */
 void convert_relative_path_to_absolute_path(char ***cmd_absolute_path, int cmd_i, char **envp)
 {
-	int		down_count_from_pwd;
 	char	*tmp;
 	char	**pwd;
 	char	*pwd_for_relative_path;
 
-	// PWDを取得する
 	get_pwd(&pwd, envp);
-
-// ft_printf("■■■▶︎%s is relative path◀︎■■■\n", cmd_absolute_path[0][cmd_i]);
-
-	// PWDから何段下がるかの数を調べる（相対パスにいくつ"../"が含まれるのかを調べる）
-	down_count_from_pwd = get_down_count_from_pwd(cmd_absolute_path[0][cmd_i]);
-ft_printf("■■■▶︎%s is %d steps down from pwd◀︎■■■\n", cmd_absolute_path[0][cmd_i], down_count_from_pwd);
-	// PWDから何段下がるかの数ぶんPWDを変更する
-	pwd_for_relative_path = steps_down(&pwd, down_count_from_pwd);
-
-	// cmd_absolute_pathにpathを加える
+	pwd_for_relative_path = get_pwd_for_relative_path(&pwd, get_down_count_from_pwd(cmd_absolute_path[0][cmd_i]));
+	delete_relative_path(cmd_absolute_path, cmd_i);
 	tmp = cmd_absolute_path[0][cmd_i];
 	cmd_absolute_path[0][cmd_i] = ft_strjoin(pwd_for_relative_path, cmd_absolute_path[0][cmd_i]);
 	free(tmp);
-	// PWDをfreeする
 	all_free(pwd);
 	free(pwd_for_relative_path);
 }
@@ -396,7 +399,6 @@ void add_absolute_path_to_cmd_name(char ***cmd_absolute_path, char **env_path, c
 		env_i = 0;
 		if (is_cmd_relative_path(cmd_absolute_path, cmd_i))
 		{
-			// 相対パスから絶対パスに変換する
 			convert_relative_path_to_absolute_path(cmd_absolute_path, cmd_i, envp);
 			continue;
 		}
@@ -442,8 +444,8 @@ void	get_cmd_absolute_path(char ***cmd_absolute_path, int argc, char **argv, cha
  * 	・コマンド(+オプション)(+ファイル)
  * ■
  */
-void pipex(int argc, char **argv, char **envp, char **cmd_absolute_path)
-{
+// void pipex(int argc, char **argv, char **envp, char **cmd_absolute_path)
+// {
 	// p_fd[0]およびp_fd[1]を用いるためにpipeを開く．
 	// pipeおよびexecveを用いるためにforkで現在のプロセス（親プロセス）を複製して新しいプロセス（子プロセス）を生成する．
 	// forkの出力値が0より小さい数だったら（子プロセスの生成に失敗したら），エラー終了する．
@@ -456,14 +458,14 @@ void pipex(int argc, char **argv, char **envp, char **cmd_absolute_path)
 			// おわり　outfile_fd					を標準出力に変える
 		// execveでコマンドを実行する．
 	// forkの出力値が0より大きい数だったら（親プロセスのpidが渡されたら），親プロセスを実行する．
-}
+// }
 
-void proc_here_doc(char **argv)
-{
+// void proc_here_doc(char **argv)
+// {
 	// p_fd[1]を用いるためにpipeを開く．パイプの書き込み側に書き込まれたデータはパイプの読み出し側から読み出されるまでカーネルでバッファリグされる．
 	// pipeを用いるためにfork()で現在のプロセス（親プロセス）を複製して新しいプロセス（子プロセス）を生成する．
 	// LIMITTERが来るまでhere_docの内容をgnlで読み取り，それをp_fd[1]（パイプの書き込み側．データの一時保存領域）に代入する．
-}
+// }
 
 int	main(int argc, char **argv, char **envp)
 {
@@ -480,7 +482,7 @@ for (int i = 0; cmd_absolute_path[i]; i++)
 	ft_printf(">>> %s\n", cmd_absolute_path[i]);
 
 	// here_docが指定されていたらhere_docの内容をgnlで読み取り，それをp_fd[1]に書き込む
-	proc_here_doc(argv);
+	// proc_here_doc(argv);
 
 	// pipexとしての処理をする
 	// pipex(argc, argv, envp, cmd_absolute_path);
