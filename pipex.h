@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipex.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: toshota <toshota@student.42.fr>            +#+  +:+       +#+        */
+/*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 09:29:26 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/20 19:04:27 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/21 09:10:04 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@
 # define INFILE	0
 # define OUTFILE	1
 # define OUTFILE_HERE_DOC	2
+# define EXECUTABLE_DFILE	3
 
 # define INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC 0
 

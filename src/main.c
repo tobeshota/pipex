@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: toshota <toshota@student.42.fr>            +#+  +:+       +#+        */
+/*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/20 19:11:53 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/21 09:58:13 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 gcc -g main.c ../libft/libft.a -o pipex
 
 cc -Wall -Wextra -Werror main.c ../libft/libft.a -o pipex
-./pipex infile "ls -a" cat outfile
+./pipex infile "ls -a" cat ../../a.out outfile
 ./pipex here_doc wow ls cat outfile
 */
 #include "../libft/libft.h"
@@ -89,8 +89,6 @@ int	is_file_openable(char *file, int file_type)
 		fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU | S_IRWXG | S_IRWXO);
 	else if (file_type == OUTFILE_HERE_DOC)
 		fd = open(file, O_WRONLY | O_CREAT | O_APPEND, S_IRWXU | S_IRWXG | S_IRWXO);
-	else
-		fd = -1;
 	close(fd);
 	if (fd == -1)
 	{
@@ -129,14 +127,6 @@ char *get_infile(char **argv)
 	return infile;
 }
 
-char *get_outfile(char argc, char **argv)
-{
-	char *outfile;
-
-	outfile = argv[argc - 1];
-	return outfile;
-}
-
 /* ■ファイルおよびコマンドは適切なものであるかを確かめる
  * 	・入力用ファイルは読み取り可能であり，かつ，ディレクトリでないかを確かめる
  * 	・出力用ファイルは書き込み可能であり，かつ，ディレクトリでないかを確かめる
@@ -148,7 +138,7 @@ int	is_argv_valid(int argc, char **argv)
 	char *outfile;
 
 	infile = get_infile(argv);
-	outfile = get_outfile(argc, argv);
+	outfile = argv[argc - 1];
 	if (is_infile_valid(infile) == FALSE)
 		return FALSE;
 	if (is_outfile_valid(infile, outfile) == FALSE)
@@ -195,7 +185,8 @@ void add_slash_eos(char ***path)
 
 int is_cmd_alreadly_absollute_path(char ***cmd_absolute_path, int cmd_i)
 {
-	if (ft_strchr(cmd_absolute_path[0][cmd_i], '/'))
+	// "/"が文頭になく，かつ，"/"が文中にあるならば，それは絶対パスである
+	if (cmd_absolute_path[0][cmd_i][0] == '/' && ft_strchr(&cmd_absolute_path[0][cmd_i][1], '/'))
 		return TRUE;
 	return FALSE;
 }
@@ -228,7 +219,7 @@ void	get_pwd_path(char ***pwd_path, char **envp)
 	add_slash_eos(pwd_path);
 }
 
-// コマンドの数を取得する
+// コマンドであるべきコマンドライン引数の数を取得する
 int get_cmd_count(int argc, char **argv)
 {
 	int cmd_count;
@@ -241,10 +232,17 @@ int get_cmd_count(int argc, char **argv)
 		i = 2;
 	while (i < argc - 1)
 	{
-		if ((is_cmd_alreadly_absollute_path(&argv, i) && !access(argv[i], X_OK)) || access(argv[i], F_OK))
+		ft_printf("argv[%d]:\t%s\t%d\n", i, argv[i], (!access(argv[i], X_OK) || access(argv[i], F_OK)));
+		// argv[i]は存在する読み取りファイル，存在する書き込みファイル，存在する実行ファイルのいずれかである．
+		// argv[i]が実行可能であるとき，それは実行ファイルである．
+		// また，パスが省略されうる（絶対パスや相対パスで指定されるという意味ではない）ファイルは実行ファイルのみである．
+		// ゆえに，パスが省略されたために存在していないと評価されたファイルは，実行ファイルでなければならない
+		// したがって，argv[i]が実行ファイルであるかを調べるには，それが実行可能であるか，パスが省略されたために存在しないと評価されるかを調べれば良い．
+		if (!access(argv[i], X_OK) || access(argv[i], F_OK))
 			cmd_count++;
 		i++;
 	}
+	ft_printf("cmd_count:\t%d\n", cmd_count);
 	return cmd_count;
 }
 
@@ -297,7 +295,8 @@ void check_cmd(char *env_path)
 
 int is_cmd_relative_path(char ***cmd_absolute_path, int cmd_i)
 {
-	if (ft_strnstr(cmd_absolute_path[0][cmd_i], "./", ft_strlen(cmd_absolute_path[0][cmd_i])))
+	// "/"が文頭になく，かつ，"/"が文中にあるならば，それは相対パスである．
+	if (cmd_absolute_path[0][cmd_i][0] != '/' && ft_strchr(&cmd_absolute_path[0][cmd_i][1], '/'))
 		return TRUE;
 	return FALSE;
 }
@@ -312,7 +311,6 @@ int get_down_count_from_pwd(char *relative_path)
 		down_count_from_pwd++;
 		relative_path += ft_strlen("../");
 	}
-ft_printf(">> %d\n", down_count_from_pwd);
 	return down_count_from_pwd;
 }
 
@@ -322,7 +320,6 @@ void convert_relative_path_to_absolute_path(char *relative_path, char **envp)
 	char	**pwd_path;
 	// PWDを取得する
 	get_pwd_path(&pwd_path, envp);
-ft_printf("*pwd_path: %s\n", *pwd_path);
 
 	// PWDから何段下がるかの数を調べる（相対パスにいくつ"../"が含まれるのかを調べる）
 	down_count_from_pwd = get_down_count_from_pwd(relative_path);
@@ -348,7 +345,6 @@ void add_absolute_path_to_cmd_name(char ***cmd_absolute_path, char **env_path, c
 	cmd_i = -1;
 	while(cmd_absolute_path[0][++cmd_i])
 	{
-		ft_printf("here:\t%s\t%d\n", cmd_absolute_path[0][cmd_i], is_cmd_relative_path(cmd_absolute_path, cmd_i));
 		env_i = 0;
 		if (is_cmd_relative_path(cmd_absolute_path, cmd_i))
 		{
@@ -433,7 +429,7 @@ int	main(int argc, char **argv, char **envp)
 	get_cmd_absolute_path(&cmd_absolute_path, argc, argv, envp);
 
 for (int i = 0; cmd_absolute_path[i]; i++)
-	ft_printf("%s\n", cmd_absolute_path[i]);
+	ft_printf(">>> %s\n", cmd_absolute_path[i]);
 
 	// here_docが指定されていたらhere_docの内容をgnlで読み取り，それをp_fd[1]に書き込む
 	proc_here_doc(argv);
