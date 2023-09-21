@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/21 23:04:47 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/21 23:17:13 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,13 +58,10 @@ int is_argc_valid(int argc, char **argv)
 		put_error(TOO_FEW_ARGC_ERROR);
 		return FALSE;
 	}
-	if (is_specified_here_doc(argv))
+	if (is_specified_here_doc(argv) && argc < 6)
 	{
-		if (argc < 6)
-		{
-			put_error(TOO_FEW_ARGC_ERROR_IN_BONUS);
-			return FALSE;
-		}
+		put_error(TOO_FEW_ARGC_ERROR_IN_BONUS);
+		return FALSE;
 	}
 	return TRUE;
 }
@@ -366,6 +363,28 @@ void convert_relative_path_to_absolute_path(char ***cmd_absolute_path, int cmd_i
 	free(pwd_for_relative_path);
 }
 
+void add_absolute_path_to_cmd_name_from_env_path(char ***cmd_absolute_path, char **env_path, int cmd_i)
+{
+	int env_i;
+	char *tmp;
+
+	env_i = 0;
+	while (env_path[env_i])
+	{
+		tmp = ft_strjoin(env_path[env_i], cmd_absolute_path[0][cmd_i]);
+		if (!access(tmp, X_OK))
+		{
+			free(cmd_absolute_path[0][cmd_i]);
+			cmd_absolute_path[0][cmd_i] = ft_strdup(tmp);
+			free(tmp);
+			break;
+		}
+		free(tmp);
+		env_i++;
+	}
+	check_cmd(env_path[env_i]);
+}
+
 /* cmdにパスを加える
  * cmd一つ一つに対して，にenv_pathを一つずつ結合していく．
  * 結合したものが実行可能であるならば，それをコマンドの絶対パスとして返す.
@@ -374,13 +393,10 @@ void convert_relative_path_to_absolute_path(char ***cmd_absolute_path, int cmd_i
 void add_absolute_path_to_cmd_name(char ***cmd_absolute_path, char **env_path, char **envp)
 {
 	int cmd_i;
-	int env_i;
-	char *tmp;
 
 	cmd_i = -1;
 	while(cmd_absolute_path[0][++cmd_i])
 	{
-		env_i = 0;
 		if (is_cmd_relative_path(cmd_absolute_path, cmd_i))
 		{
 			convert_relative_path_to_absolute_path(cmd_absolute_path, cmd_i, envp);
@@ -388,20 +404,7 @@ void add_absolute_path_to_cmd_name(char ***cmd_absolute_path, char **env_path, c
 		}
 		if (is_cmd_alreadly_absollute_path(cmd_absolute_path, cmd_i))
 			continue;
-		while (env_path[env_i])
-		{
-			tmp = ft_strjoin(env_path[env_i], cmd_absolute_path[0][cmd_i]);
-			if (!access(tmp, X_OK))
-			{
-				free(cmd_absolute_path[0][cmd_i]);
-				cmd_absolute_path[0][cmd_i] = ft_strdup(tmp);
-				free(tmp);
-				break;
-			}
-			free(tmp);
-			env_i++;
-		}
-		check_cmd(env_path[env_i]);
+		add_absolute_path_to_cmd_name_from_env_path(cmd_absolute_path, env_path, cmd_i);
 	}
 }
 
