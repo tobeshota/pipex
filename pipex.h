@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 09:29:26 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/21 20:10:44 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/21 23:02:02 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,10 +39,13 @@ typedef struct s_data
 # define CMD_ERROR "command not found\n"
 # define TRUE 1
 # define FALSE 0
+
+# define HERE_DOC_FILE_NAME "here_doc"
+
 # define INFILE 0
-# define OUTFILE 1
-# define OUTFILE_HERE_DOC 2
-# define EXECUTABLE_DFILE 3
+# define INFILE_HERE_DOC 1
+# define OUTFILE 2
+# define OUTFILE_HERE_DOC 3
 
 # define INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC 0
 

@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/21 22:56:15 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/21 23:04:47 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,8 @@ int	open_file(char *file, int file_type)
 
 	if (file_type == INFILE)
 		fd = open(file, O_RDONLY);
+	else if (file_type == INFILE_HERE_DOC)
+		fd = open(file, O_RDONLY | O_CREAT | O_TRUNC, S_IRWXU | S_IRWXG | S_IRWXO);
 	else if (file_type == OUTFILE)
 		fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU | S_IRWXG | S_IRWXO);
 	else if (file_type == OUTFILE_HERE_DOC)
@@ -104,7 +106,7 @@ int	is_infile_valid(char *infile)
 	int fd;
 
 	if (infile == INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC)
-		return TRUE;
+		fd = open_file(HERE_DOC_FILE_NAME, INFILE_HERE_DOC);
 	else
 		fd = open_file(infile, INFILE);
 	close(fd);
@@ -424,6 +426,8 @@ void proc_here_doc(char **argv)
 	// p_fd[1]を用いるためにpipeを開く．パイプの書き込み側に書き込まれたデータはパイプの読み出し側から読み出されるまでカーネルでバッファリグされる．
 	// pipeを用いるためにfork()で現在のプロセス（親プロセス）を複製して新しいプロセス（子プロセス）を生成する．
 	// LIMITTERが来るまでhere_docの内容をgnlで読み取り，それをp_fd[1]（パイプの書き込み側．データの一時保存領域）に代入する．
+	// here_docファイルをclose();する．
+	// here_docファイルをunlinkで消す．
 }
 
 /* ■ファイルおよびコマンドは適切なものであるかを確かめる
@@ -443,8 +447,7 @@ int	is_argv_valid(int argc, char **argv)
 void get_infile_fd(int argc, char **argv, int *infile_fd)
 {
 	if (is_specified_here_doc(argv))
-		// here_docが指定されていたらhere_docの内容をgnlで読み取り，それをp_fd[1]に書き込む
-		proc_here_doc(argv);
+		*infile_fd = open_file(HERE_DOC_FILE_NAME, INFILE_HERE_DOC);
 	else
 		*infile_fd = open_file(get_infile(argv), INFILE);
 }
@@ -487,6 +490,8 @@ void	get_data(int argc, char **argv, t_data *data, char **envp)
 void pipex(int argc, char **argv, char **envp, char **cmd_absolute_path)
 {
 	int p_fd[2];
+	// here_docが指定されていたらhere_docの内容をgnlで読み取り，それをp_fd[1]に書き込む
+	proc_here_doc(argv);
 
 	execve(cmd_absolute_path[1], argv, envp);
 	// p_fd[0]およびp_fd[1]を用いるためにpipeを開く．
@@ -517,7 +522,7 @@ for (int i = 0; data.cmd_absolute_path[i]; i++)
 	ft_printf(">>> %s\n", data.cmd_absolute_path[i]);
 
 	// pipexとしての処理をする
-	// pipex(argc, argv, envp, cmd_absolute_path);
+	// pipex(argc, argv, envp, data.cmd_absolute_path);
 	all_free(data.cmd_absolute_path);
 // all_free(argv);
 }
