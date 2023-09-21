@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/21 23:17:13 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/21 23:58:38 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ int	open_file(char *file, int file_type)
 	if (file_type == INFILE)
 		fd = open(file, O_RDONLY);
 	else if (file_type == INFILE_HERE_DOC)
-		fd = open(file, O_RDONLY | O_CREAT | O_TRUNC, S_IRWXU | S_IRWXG | S_IRWXO);
+		fd = open(file, O_RDONLY | O_CREAT | O_APPEND, S_IRWXU | S_IRWXG | S_IRWXO);
 	else if (file_type == OUTFILE)
 		fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU | S_IRWXG | S_IRWXO);
 	else if (file_type == OUTFILE_HERE_DOC)
