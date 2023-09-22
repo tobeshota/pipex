@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/22 13:06:08 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/22 14:32:10 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -583,11 +583,15 @@ void set_output_fd(int arg_i, int argc)
 		;	// [O2]さいごの出力先では，outfile_fdを標準出力にする
 }
 
-void do_child(char **argv, char **envp, t_data *data, pid_t pid)
+void do_child(char **envp, t_data *data, pid_t pid)
 {
+	char **cmd_arg;
+
+	cmd_arg = ft_split(data->cmd_absolute_path_with_option[data->cmd_i], ' ');
+	check_malloc(cmd_arg);
 	set_input_fd(data->arg_i);
 	set_output_fd(data->arg_i, data->argc);
-	execve(data->cmd_absolute_path[data->cmd_i], ft_split(data->cmd_absolute_path_with_option[data->cmd_i], ' '), envp);	// コマンドを実行する
+	execve(data->cmd_absolute_path[data->cmd_i], cmd_arg, envp);	// コマンドを実行する
 	data->cmd_i++;	//	次のコマンドを参照するようにする
 }
 
@@ -597,14 +601,14 @@ ft_printf("pipex!\n");
 
 	// while(argv[data->arg_i])
 	// {
-		// get_pipe(data);
-		// data->child1_pid = fork();
-		// if(data->child1_pid == 0)
-		// 	do_child(argv, envp, data, data->child1_pid);
-		// data->child2_pid = fork();
-		// if(data->child2_pid == 0)
-		// 	do_child(argv, envp, data, data->child2_pid);
-		// data->arg_i++;
+	// 	get_pipe(data);
+	// 	data->child1_pid = fork();
+	// 	if(data->child1_pid == 0)
+	// 		do_child(envp, data, data->child1_pid);
+	// 	data->child2_pid = fork();
+	// 	if(data->child2_pid == 0)
+	// 		do_child(envp, data, data->child2_pid);
+	// 	data->arg_i++;
 	// }
 }
 
