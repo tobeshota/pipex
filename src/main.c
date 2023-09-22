@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/22 11:43:03 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/22 12:28:51 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -241,7 +241,7 @@ size_t strlen_until_c(char *str, char c)
  * "here_doc"がない場合，argv[0](実行ファイル)，argv[1](infile)，argv[argc-1](outfile)以外を「cmdであるべきもの」として取得する
  * "here_doc"がある場合，argv[0](実行ファイル)，argv[1](here_doc)，argv[2](LIMITTER)，argv[argc-1](outfile)以外であり，かつ，F_OKに失敗したものを「cmdであるべきもの」として取得する
  */
-void get_cmd_name_from_arg(char ***cmd_absolute_path, int argc, char **argv)
+void get_cmd_name_from_arg(int argc, char **argv, char ***cmd_absolute_path)
 {
 	int arg_i;
 	int cmd_i;
@@ -264,6 +264,32 @@ void get_cmd_name_from_arg(char ***cmd_absolute_path, int argc, char **argv)
 		arg_i++;
 	}
 	cmd_absolute_path[0][cmd_i] = NULL;
+}
+
+void get_cmd_option(int argc, char **argv, char ***cmd_absolute_path, char ***cmd_absolute_path_with_option)
+{
+	int arg_i;
+	int cmd_i;
+
+	*cmd_absolute_path_with_option = (char **)malloc(sizeof(char *) * (get_cmd_count(argc, argv) + 1));
+	check_malloc(*cmd_absolute_path_with_option);
+	if (is_specified_here_doc(argv))
+		arg_i = 3;
+	else
+		arg_i = 2;
+	cmd_i = 0;
+	while (arg_i < argc - 1)
+	{
+		if (!access(argv[arg_i], X_OK) || access(argv[arg_i], F_OK))
+		{
+			cmd_absolute_path_with_option[0][cmd_i] = ft_substr(argv[arg_i], ft_strlen(cmd_absolute_path[0][cmd_i]) + 1, ft_strlen(argv[arg_i]));
+			check_malloc(cmd_absolute_path_with_option[0][cmd_i]);
+		ft_printf("cmd_absolute_path_with_option[0][%d]:\t[%s]\n", cmd_i, cmd_absolute_path_with_option[0][cmd_i]);
+			cmd_i++;
+		}
+		arg_i++;
+	}
+	cmd_absolute_path_with_option[0][cmd_i] = NULL;
 }
 
 void check_cmd(char *env_path)
@@ -413,14 +439,15 @@ void add_absolute_path_to_cmd_name(char ***cmd_absolute_path, char **env_path, c
  * ・cmdであるべきものを取得する
  * ・cmdにパスを加える
  */
-void	get_cmd_absolute_path(char ***cmd_absolute_path, int argc, char **argv, char **envp)
+void	get_cmd_absolute_path(int argc, char **argv, char **envp, t_data *data)
 {
 	char	**env_path;
 
 	get_env_path(&env_path, envp);
 // env_path = ft_split("PATH=/Library/Frameworks/Python.framework/Versions/3.6/bin/:/Users/tobeshota/anaconda3/condabin/:/opt/homebrew/opt/node@18/bin/:/Users/tobeshota/.cargo/bin/:/usr/local/Qt-5.15.10/bin/:/opt/homebrew/opt/pyqt@5/5 5.15.7_2/bin/:/opt/homebrew/opt/qt@5/bin/:/Users/tobeshota/.nodebrew/current/bin/:/Users/tobeshota/.pyenv/shims/:/Users/tobeshota/.pyenv/bin/:/Library/Frameworks/Python.framework/Versions/3.10/bin/:/usr/local/bin/:/usr/bin/:/bin/:/usr/sbin/:/sbin/:/opt/X11/bin/:/Users/tobeshota/workspace/command", ':');
-	get_cmd_name_from_arg(cmd_absolute_path, argc, argv);
-	add_absolute_path_to_cmd_name(cmd_absolute_path, env_path, envp);
+	get_cmd_name_from_arg(argc, argv, &data->cmd_absolute_path);
+	get_cmd_option(argc, argv, &data->cmd_absolute_path, &data->cmd_absolute_path_with_option);
+	add_absolute_path_to_cmd_name(&data->cmd_absolute_path, env_path, envp);
 	all_free(env_path);
 }
 
@@ -513,11 +540,11 @@ void get_arg_i(int argc, char **argv, t_data *data)
 		data->arg_i = 2;
 }
 
-void	get_data(int argc, char **argv, t_data *data, char **envp)
+void	get_data(int argc, char **argv, char **envp, t_data *data)
 {
+	get_cmd_absolute_path(argc, argv, envp, data);
 	get_infile_fd(argv, &data->infile_fd);
 	get_outfile_fd(argc, argv, &data->outfile_fd);
-	get_cmd_absolute_path(&data->cmd_absolute_path, argc, argv, envp);
 	get_argc(argc, data);
 	get_arg_i(argc, argv, data);
 }
@@ -542,7 +569,7 @@ void do_child(char **argv, char **envp, t_data *data, pid_t pid)
 {
 	set_input_fd(data->arg_i);
 	set_output_fd(data->arg_i, data->argc);
-	execve(data->cmd_absolute_path[data->cmd_i], data->cmd_with_option[data->cmd_i], envp);	// コマンドを実行する
+	execve(data->cmd_absolute_path[data->cmd_i], ft_split(data->cmd_absolute_path_with_option[data->cmd_i], ' '), envp);	// コマンドを実行する
 	data->cmd_i++;	//	次のコマンドを参照するようにする
 }
 
@@ -579,6 +606,7 @@ ft_printf("pipex!\n");
 void end_pipex(char **argv, t_data *data)
 {
 	all_free(data->cmd_absolute_path);
+	all_free(data->cmd_absolute_path_with_option);
 	if (is_specified_here_doc(argv))
 		unlink(HERE_DOC_FILE_NAME);
 	else
@@ -594,7 +622,7 @@ int	main(int argc, char **argv, char **envp)
 // argc = 6;
 
 	check_arg(argc, argv);
-	get_data(argc, argv, &data, envp);
+	get_data(argc, argv, envp, &data);
 
 for (int i = 0; data.cmd_absolute_path[i]; i++)
 	ft_printf(">>> %s\n", data.cmd_absolute_path[i]);

@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 09:29:26 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/22 11:42:58 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/22 11:59:11 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ typedef struct s_data
 	int		infile_fd;
 	int		outfile_fd;
 	char	**cmd_absolute_path;
-	char	***cmd_with_option;
+	char	**cmd_absolute_path_with_option;
 	int		arg_i;
 	int		cmd_i;
 	int		argc;
