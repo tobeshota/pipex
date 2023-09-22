@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/22 20:04:46 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/23 00:07:21 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -548,7 +548,6 @@ void set_input_fd(t_data *data)
 {
 	if (data->cmd_i == 0)
 	{
-		ft_printf("yeah!\n");
 		// [I1]さいしょの入力先では，標準入力をinfile_fdにする
 		if (dup2(data->infile_fd, STDIN_FILENO) == -1)
 		{
@@ -565,9 +564,8 @@ void set_input_fd(t_data *data)
 		// ft_printf("here< [%s]\n", buf);
 
 		close(data->infile_fd);
-		ft_printf("━▶︎%d\n", data->infile_fd);
 	}
-	if (data->cmd_i == 1)
+	else
 	{
 		// [I2]2回目以降の入力先では，標準入力(infile_fd)をp_fd[0]する
 		if (dup2(data->p_fd[0], STDIN_FILENO) == -1)
@@ -589,7 +587,7 @@ if (dup2(data->outfile_fd, STDOUT_FILENO) == -1)
 }
 close(data->outfile_fd);
 
-	// if (data->cmd_i == 0)
+	// if (data->cmd_absolute_path[data->cmd_i + 1] != NULL)
 	// {
 	// 	// [O1]さいごより1回前の出力先では，標準出力をp_fd[1]にする
 	// 	if (dup2(data->p_fd[1], STDOUT_FILENO) == -1)
@@ -599,7 +597,7 @@ close(data->outfile_fd);
 	// 	}
 	// 	close(data->p_fd[0]);
 	// }
-	// if (data->cmd_absolute_path[data->cmd_i + 1] == NULL)
+	// else
 	// {
 	// 	// [O2]さいごの出力先では，標準出力(data->p_fd[1])をoutfile_fdにする
 	// 	if (dup2(data->outfile_fd, data->p_fd[1]) == -1)
@@ -625,11 +623,6 @@ void do_child(char **envp, t_data *data)
 
 void pipex(char **envp, t_data *data)
 {
-ft_printf("pipex!\n");
-
-// ft_printf("data->cmd_i\t\t\t\t%d\n", data->cmd_i);
-// ft_printf("data->cmd_absolute_path[%d]\t\t%s\n", data->cmd_i, data->cmd_absolute_path[data->cmd_i]);
-// ft_printf("data->cmd_absolute_path_with_option[%d]\t%s\n", data->cmd_i, data->cmd_absolute_path_with_option[data->cmd_i]);
 
 do_child(envp, data);
 
@@ -687,7 +680,6 @@ int	main(int argc, char **argv, char **envp)
 // 	ft_printf(">>> %s\n", data.cmd_absolute_path[i]);
 // for (int i = 0; data.cmd_absolute_path_with_option[i]; i++)
 // 	ft_printf("■■▶︎ %s\n", data.cmd_absolute_path_with_option[i]);
-ft_printf(">>>>>>>>%d\n", data.infile_fd);
 
 	// pipexとしての処理をする
 	pipex(envp, &data);
