@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/22 10:40:14 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/22 11:43:03 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -483,24 +483,86 @@ void check_arg(int argc, char **argv)
 		exit(1);
 }
 
+void check_pipe(int ret)
+{
+	if(ret < 0)
+	{
+		put_error(PIPE_ERROR);
+		exit(1);
+	}
+}
+
+void get_pipe(t_data *data)
+{
+	int ret;
+
+	ret = pipe(data->p_fd);
+	check_pipe(ret);
+}
+
+void get_argc(int argc, t_data *data)
+{
+	data->argc = argc;
+}
+
+void get_arg_i(int argc, char **argv, t_data *data)
+{
+	if (is_specified_here_doc(argv))
+		data->arg_i = 3;
+	else
+		data->arg_i = 2;
+}
+
 void	get_data(int argc, char **argv, t_data *data, char **envp)
 {
 	get_infile_fd(argv, &data->infile_fd);
 	get_outfile_fd(argc, argv, &data->outfile_fd);
 	get_cmd_absolute_path(&data->cmd_absolute_path, argc, argv, envp);
+	get_argc(argc, data);
+	get_arg_i(argc, argv, data);
 }
 
+void set_input_fd(int arg_i)
+{
+	if (arg_i == 1)
+		;	// [I1]さいしょの入力先では，infile_fdを標準入力にする
+	else
+		;	// [I2]2回目以降の入力先では，p_fd[0]を標準入力にする
+}
 
-/* 必要となる引数
- * ■execve
- * 	・環境変数
- * 	・コマンドの絶対パス
- * 	・コマンド(+オプション)(+ファイル)
- * ■
- */
-void pipex(int argc, char **argv, char **envp, t_data *data)
+void set_output_fd(int arg_i, int argc)
+{
+	if (arg_i < argc - 1)
+		;	// [O1]さいごより1回前の出力先では，p_fd[1]を標準出力にする
+	else
+		;	// [O2]さいごの出力先では，outfile_fdを標準出力にする
+}
+
+void do_child(char **argv, char **envp, t_data *data, pid_t pid)
+{
+	set_input_fd(data->arg_i);
+	set_output_fd(data->arg_i, data->argc);
+	execve(data->cmd_absolute_path[data->cmd_i], data->cmd_with_option[data->cmd_i], envp);	// コマンドを実行する
+	data->cmd_i++;	//	次のコマンドを参照するようにする
+}
+
+void pipex(char **argv, char **envp, t_data *data)
 {
 ft_printf("pipex!\n");
+
+	// while(argv[data->arg_i])
+	// {
+		// get_pipe(data);
+		// data->child1_pid = fork();
+		// if(data->child1_pid == 0)
+		// 	do_child(argv, envp, data, data->child1_pid);
+		// data->child2_pid = fork();
+		// if(data->child2_pid == 0)
+		// 	do_child(argv, envp, data, data->child2_pid);
+		// data->arg_i++;
+	// }
+}
+
 	// p_fd[0]およびp_fd[1]を用いるためにpipeを開く．
 	// pipeおよびexecveを用いるためにforkで現在のプロセス（親プロセス）を複製して新しいプロセス（子プロセス）を生成する．
 	// <>forkの出力値が0より小さい数だったら（子プロセスの生成に失敗したら），エラー終了する．
@@ -513,13 +575,15 @@ ft_printf("pipex!\n");
 			// おわり　outfile_fd					を標準出力に変える
 		// execveでコマンドを実行する．
 	// <>forkの出力値が0より大きい数だったら（親プロセスのpidが渡されたら），親プロセスを実行する．
-}
 
 void end_pipex(char **argv, t_data *data)
 {
 	all_free(data->cmd_absolute_path);
 	if (is_specified_here_doc(argv))
 		unlink(HERE_DOC_FILE_NAME);
+	else
+		close(data->infile_fd);
+	close(data->outfile_fd);
 }
 
 int	main(int argc, char **argv, char **envp)
@@ -536,7 +600,7 @@ for (int i = 0; data.cmd_absolute_path[i]; i++)
 	ft_printf(">>> %s\n", data.cmd_absolute_path[i]);
 
 	// pipexとしての処理をする
-	pipex(argc, argv, envp, &data);
+	pipex(argv, envp, &data);
 	// 終了する
 	end_pipex(argv, &data);
 // all_free(argv);

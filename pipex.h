@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 09:29:26 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/21 23:02:02 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/22 11:42:58 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,12 +17,16 @@
 
 typedef struct s_data
 {
-	pid_t	pid_1;
-	pid_t	pid_2;
+	pid_t	child1_pid;
+	pid_t	child2_pid;
 	int		p_fd[2];
 	int		infile_fd;
 	int		outfile_fd;
 	char	**cmd_absolute_path;
+	char	***cmd_with_option;
+	int		arg_i;
+	int		cmd_i;
+	int		argc;
 }			t_data;
 
 # define TOO_FEW_ARGC_ERROR \
@@ -37,6 +41,7 @@ typedef struct s_data
 # define FILE_EXIST_ERROR "file not found\n"
 # define MALLOC_ERROR "failed to malloc\n"
 # define CMD_ERROR "command not found\n"
+# define PIPE_ERROR "failed to create pipe\n"
 # define TRUE 1
 # define FALSE 0
 
