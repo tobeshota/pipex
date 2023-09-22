@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/22 10:01:44 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/22 10:40:14 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -438,16 +438,6 @@ void proc_here_doc(char *limitter, int infile_fd)
 	free(line);
 }
 
-
-// p_fd[1]を用いるためにpipeを開く．パイプの書き込み側に書き込まれたデータはパイプの読み出し側から読み出されるまでカーネルでバッファリグされる．
-	// pipeを用いるためにfork()で現在のプロセス（親プロセス）を複製して新しいプロセス（子プロセス）を生成する．
-	// LIMITTERが来るまでhere_docの内容をgnlで読み取り，それをp_fd[1]（パイプの書き込み側．データの一時保存領域）に代入する．
-	// here_docファイルをclose();する．
-	// here_docファイルをunlinkで消す．
-
-
-
-
 /* ■ファイルおよびコマンドは適切なものであるかを確かめる
  * 	・入力用ファイルは読み取り可能であり，かつ，ディレクトリでないかを確かめる
  * 	・出力用ファイルは書き込み可能であり，かつ，ディレクトリでないかを確かめる
@@ -462,7 +452,7 @@ int	is_argv_valid(int argc, char **argv)
 	return TRUE;
 }
 
-void get_infile_fd(int argc, char **argv, int *infile_fd)
+void get_infile_fd(char **argv, int *infile_fd)
 {
 	if (is_specified_here_doc(argv))
 	{
@@ -495,7 +485,7 @@ void check_arg(int argc, char **argv)
 
 void	get_data(int argc, char **argv, t_data *data, char **envp)
 {
-	get_infile_fd(argc, argv, &data->infile_fd);
+	get_infile_fd(argv, &data->infile_fd);
 	get_outfile_fd(argc, argv, &data->outfile_fd);
 	get_cmd_absolute_path(&data->cmd_absolute_path, argc, argv, envp);
 }
@@ -508,11 +498,9 @@ void	get_data(int argc, char **argv, t_data *data, char **envp)
  * 	・コマンド(+オプション)(+ファイル)
  * ■
  */
-void pipex(int argc, char **argv, char **envp, char **cmd_absolute_path)
+void pipex(int argc, char **argv, char **envp, t_data *data)
 {
-	int p_fd[2];
-
-	execve(cmd_absolute_path[1], argv, envp);
+ft_printf("pipex!\n");
 	// p_fd[0]およびp_fd[1]を用いるためにpipeを開く．
 	// pipeおよびexecveを用いるためにforkで現在のプロセス（親プロセス）を複製して新しいプロセス（子プロセス）を生成する．
 	// <>forkの出力値が0より小さい数だったら（子プロセスの生成に失敗したら），エラー終了する．
@@ -548,7 +536,7 @@ for (int i = 0; data.cmd_absolute_path[i]; i++)
 	ft_printf(">>> %s\n", data.cmd_absolute_path[i]);
 
 	// pipexとしての処理をする
-	// pipex(argc, argv, envp, data.cmd_absolute_path);
+	pipex(argc, argv, envp, &data);
 	// 終了する
 	end_pipex(argv, &data);
 // all_free(argv);
