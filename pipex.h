@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 09:29:26 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/22 11:59:11 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/22 18:39:15 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ typedef struct s_data
 # define MALLOC_ERROR "failed to malloc\n"
 # define CMD_ERROR "command not found\n"
 # define PIPE_ERROR "failed to create pipe\n"
+# define DUP_ERROR "failed to dup\n"
 # define TRUE 1
 # define FALSE 0
 
