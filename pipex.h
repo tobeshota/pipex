@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 09:29:26 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/22 18:39:15 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/23 12:06:35 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,8 @@ typedef struct s_data
 # define CMD_ERROR "command not found\n"
 # define PIPE_ERROR "failed to create pipe\n"
 # define DUP_ERROR "failed to dup\n"
+# define FORK_ERROR "failed to fork\n"
+
 # define TRUE 1
 # define FALSE 0
 

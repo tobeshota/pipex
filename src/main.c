@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/23 00:07:21 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/23 12:22:42 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -519,6 +519,15 @@ void check_arg(int argc, char **argv)
 		exit(1);
 }
 
+void check_fork(pid_t child_pid)
+{
+	if(child_pid < 0)
+	{
+		put_error(FORK_ERROR);
+		exit(1);
+	}
+}
+
 void check_pipe(int ret)
 {
 	if(ret < 0)
@@ -548,98 +557,94 @@ void set_input_fd(t_data *data)
 {
 	if (data->cmd_i == 0)
 	{
+		ft_printf("[I1]\n");
 		// [I1]さいしょの入力先では，標準入力をinfile_fdにする
 		if (dup2(data->infile_fd, STDIN_FILENO) == -1)
 		{
 			put_error(DUP_ERROR);
 			exit(1);
 		}
-
-		// char *buf;
-		// read(data->infile_fd, buf, 3);
-		// ft_printf("here< [%s]\n", buf);
-		// read(STDIN_FILENO, buf, 3);
-		// ft_printf("here< [%s]\n", buf);
-		// read(data->infile_fd, buf, 3);
-		// ft_printf("here< [%s]\n", buf);
-
 		close(data->infile_fd);
 	}
 	else
 	{
+		ft_printf("[I2]\n");
 		// [I2]2回目以降の入力先では，標準入力(infile_fd)をp_fd[0]する
 		if (dup2(data->p_fd[0], STDIN_FILENO) == -1)
 		{
 			put_error(DUP_ERROR);
 			exit(1);
 		}
-		close(data->infile_fd);
 		close(data->p_fd[1]);
 	}
 }
 
 void set_output_fd(t_data *data)
 {
-if (dup2(data->outfile_fd, STDOUT_FILENO) == -1)
-{
-	put_error(DUP_ERROR);
-	exit(1);
-}
-close(data->outfile_fd);
-
-	// if (data->cmd_absolute_path[data->cmd_i + 1] != NULL)
-	// {
-	// 	// [O1]さいごより1回前の出力先では，標準出力をp_fd[1]にする
-	// 	if (dup2(data->p_fd[1], STDOUT_FILENO) == -1)
-	// 	{
-	// 		put_error(DUP_ERROR);
-	// 		exit(1);
-	// 	}
-	// 	close(data->p_fd[0]);
-	// }
-	// else
-	// {
-	// 	// [O2]さいごの出力先では，標準出力(data->p_fd[1])をoutfile_fdにする
-	// 	if (dup2(data->outfile_fd, data->p_fd[1]) == -1)
-	// 	{
-	// 		put_error(DUP_ERROR);
-	// 		exit(1);
-	// 	}
-	// 	close(data->p_fd[1]);
-	// }
+// if (dup2(data->outfile_fd, STDOUT_FILENO) == -1)
+// {
+// 	put_error(DUP_ERROR);
+// 	exit(1);
+// }
+// close(data->outfile_fd);
+	if (data->cmd_absolute_path[data->cmd_i + 1] != NULL)
+	{
+		ft_printf("[O1]\n");
+		// [O1]さいごより1回前の出力先では，標準出力をp_fd[1]にする
+		if (dup2(data->p_fd[1], STDOUT_FILENO) == -1)
+		{
+			put_error(DUP_ERROR);
+			exit(1);
+		}
+		close(data->p_fd[0]);
+	}
+	else
+	{
+		ft_printf("[O2]\n");
+		// [O2]さいごの出力先では，標準出力(data->p_fd[1])をoutfile_fdにする
+		if (dup2(data->outfile_fd, STDOUT_FILENO) == -1)
+		{
+			put_error(DUP_ERROR);
+			exit(1);
+		}
+		close(data->outfile_fd);
+	}
 }
 
 void do_child(char **envp, t_data *data)
 {
 	char **cmd;
 
+	ft_printf("%s\n", data->cmd_absolute_path[data->cmd_i]);
 	cmd = ft_split(data->cmd_absolute_path_with_option[data->cmd_i], ' ');
 	check_malloc(cmd);
 	set_input_fd(data);
 	set_output_fd(data);
 	execve(data->cmd_absolute_path[data->cmd_i], cmd, envp);	// コマンドを実行する
-	data->cmd_i++;	//	次のコマンドを参照するようにする
 }
 
 void pipex(char **envp, t_data *data)
 {
+// do_child(envp, data);
+	while (data->cmd_absolute_path[data->cmd_i])
+	{
+		get_pipe(data);
 
-do_child(envp, data);
+		data->child1_pid = fork();
+		check_fork(data->child1_pid);
+		if(data->child1_pid == 0)
+			do_child(envp, data);
+		data->cmd_i++;
 
-// execve(data->cmd_absolute_path[data->cmd_i], ft_split(data->cmd_absolute_path_with_option[data->cmd_i], ' '), envp);		//	execveできた！
+		data->child1_pid = fork();
+		check_fork(data->child1_pid);
+		if(data->child2_pid == 0)
+			do_child(envp, data);
+		data->cmd_i++;
 
-	// while (data->cmd_absolute_path[data->cmd_i])
-	// {
-	// 	get_pipe(data);
-	// 	data->child1_pid = fork();
-	// 	if(data->child1_pid == 0)
-	// 		do_child(envp, data);
-	// 	data->child2_pid = fork();
-	// 	if(data->child2_pid == 0)
-	// 		do_child(envp, data);
-	// 	waitpid(data->child1_pid, NULL, 0);
-	// 	waitpid(data->child2_pid, NULL, 0);
-	// }
+		waitpid(data->child1_pid, NULL, 0);
+		waitpid(data->child2_pid, NULL, 0);
+	}
 }
 
 	// p_fd[0]およびp_fd[1]を用いるためにpipeを開く．
