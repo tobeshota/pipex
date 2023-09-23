@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: toshota <toshota@student.42.fr>            +#+  +:+       +#+        */
+/*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/23 23:14:58 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/24 02:19:21 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,10 +22,7 @@ void print_data(t_data *data, char *msg)
 {
     ft_printf("\n\n\n【%s】\n", msg);
 	ft_printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-    ft_printf("\t\t\t%s\t%d\n", "child1_pid", data->child1_pid);
-    ft_printf("\t\t\t%s\t%d\n", "child2_pid", data->child2_pid);
-    ft_printf("\t\t\t%s\t\t%d\n", "p_fd[0]", data->p_fd[0]);
-    ft_printf("\t\t\t%s\t\t%d\n", "p_fd[1]", data->p_fd[1]);
+    ft_printf("\t\t\t%s\t%d\n", "child_pid", data->child_pid);
     ft_printf("\t\t\t%s\t%d\n", "infile_fd", data->infile_fd);
     ft_printf("\t\t\t%s\t%d\n", "outfile_fd", data->outfile_fd);
     ft_printf("\t\t\t%s\t\t%d\n", "cmd_i", data->cmd_i);
@@ -45,7 +42,7 @@ void check_close(int ret)
 {
 	if(ret < 0)
 	{
-		put_error(CLOSE_ERROR);
+		put_error("failed to close\n");
 		exit(1);
 	}
 }
@@ -97,22 +94,12 @@ int is_argc_valid(int argc, char **argv)
 {
 	if (argc < 5)
 	{
-		put_error(TOO_FEW_ARGC_ERROR);
+		put_error("argc at least 5 as follows:\n./pipex infile cmd1 cmd2 outfile\n");
 		return FALSE;
 	}
 	if (is_specified_here_doc(argv) && argc < 6)
 	{
-		put_error(TOO_FEW_ARGC_ERROR_IN_BONUS);
-		return FALSE;
-	}
-	return TRUE;
-}
-
-int is_file_exist(char *file)
-{
-	if (access(file, F_OK))
-	{
-		put_error(FILE_EXIST_ERROR);
+		put_error("argc at least 6 as follows:\n./pipex here_doc LIMITTER cmd1 cmd2 outfile\n");
 		return FALSE;
 	}
 	return TRUE;
@@ -134,7 +121,7 @@ int	open_file(char *file, int file_type)
 		fd = -1;
 	if (fd == -1)
 	{
-		put_error(FILE_OPEN_ERROR);
+		put_error("unable to open file\n");
 		exit(1);
 	}
 	return fd;
@@ -188,7 +175,7 @@ void	check_malloc(void *ptr)
 {
 	if (ptr == NULL)
 	{
-		put_error(MALLOC_ERROR);
+		put_error("failed to malloc\n");
 		exit(1);
 	}
 }
@@ -225,7 +212,7 @@ void	get_env_path(char ***env_path, char **envp)
 	while (envp[i] && ft_strncmp(envp[i], "PATH=", ft_strlen("PATH=")))
 		i++;
 	if (envp[i] == NULL)
-		put_error(PATH_EXIST_ERROR);
+		put_error("PATH not found\n");
 	*env_path = ft_split(envp[i] + ft_strlen("PATH="), ':');
 	check_malloc(env_path);
 	add_slash_eos(env_path);
@@ -239,7 +226,7 @@ void	get_pwd(char ***pwd_path, char **envp)
 	while (envp[i] && ft_strncmp(envp[i], "PWD=", ft_strlen("PWD=")))
 		i++;
 	if (envp[i] == NULL)
-		put_error(PATH_EXIST_ERROR);
+		put_error("PATH not found\n");
 	*pwd_path = ft_split(envp[i] + ft_strlen("PWD="), ':');
 	check_malloc(pwd_path);
 	add_slash_eos(pwd_path);
@@ -337,7 +324,7 @@ void check_cmd(char *env_path)
 {
 	if (env_path == NULL)
 	{
-		put_error(CMD_ERROR);
+		put_error("command not found\n");
 		exit(1);
 	}
 }
@@ -533,7 +520,7 @@ void proc_here_doc(char *limitter, int infile_fd)
 		line = get_next_line(STDIN_FILENO);
 	}
 	free(line);
-	close(infile_fd);
+	close_fd(infile_fd);
 	infile_fd = open_file(HERE_DOC_FILE_NAME, INFILE_HERE_DOC);
 }
 
@@ -586,7 +573,7 @@ void check_pipe(int ret)
 {
 	if(ret < 0)
 	{
-		put_error(PIPE_ERROR);
+		put_error("failed to create pipe\n");
 		exit(1);
 	}
 }
@@ -605,22 +592,20 @@ void init_util_data(t_data *data)
 	data->cmd_i = 0;
 }
 
-int **get_multiple_pipe(int argc, char **argv)
+void get_multiple_pipe(int argc, char **argv, t_data *data)
 {
-	int	**pipe_fd;
-	int	index;
+	int	i;
 
-	index = 0;
-	pipe_fd = (int **)malloc(sizeof(int *) * (get_cmd_count(argc, argv) + 1));
-	check_malloc(pipe_fd);
-	while (index < get_cmd_count(argc, argv))
+	i = 0;
+	data->pipe_fd = (int **)malloc(sizeof(int *) * (get_cmd_count(argc, argv) + 1));
+	check_malloc(data->pipe_fd);
+	while (i < get_cmd_count(argc, argv))
 	{
-		pipe_fd[index] = (int *)malloc(sizeof(int) * 2);
-		check_malloc(pipe_fd);
-		index++;
+		data->pipe_fd[i] = (int *)malloc(sizeof(int) * 2);
+		check_malloc(data->pipe_fd);
+		i++;
 	}
-	pipe_fd[index] = NULL;
-	return (pipe_fd);
+	data->pipe_fd[i] = NULL;
 }
 
 void	get_data(int argc, char **argv, char **envp, t_data *data)
@@ -629,41 +614,31 @@ void	get_data(int argc, char **argv, char **envp, t_data *data)
 	get_cmd_absolute_path(argc, argv, envp, data);
 	get_infile_fd(argv, &data->infile_fd);
 	get_outfile_fd(argc, argv, &data->outfile_fd);
-	data->pipe_fd = get_multiple_pipe(argc, argv);
+	get_multiple_pipe(argc, argv, data);
 }
 
 void set_input_fd(t_data *data)
 {
-// if (dup2(data->infile_fd, STDIN_FILENO) == -1)
-// {
-// 	put_error(DUP_ERROR);
-// 	exit(1);
-// }
-// close_fd(data->infile_fd);
 	if (data->cmd_i == 0)
 	{
 		// [I1]さいしょの入力先では，標準入力をinfile_fdにする
 		ft_printf("[I1]\n");
 		if (dup2(data->infile_fd, STDIN_FILENO) == -1)
 		{
-			put_error(DUP_ERROR);
+			put_error("failed to dup\n");
 			exit(1);
 		}
 		close_fd(data->infile_fd);
-		// close_fd(STDIN_FILENO);
 	}
 	else
 	{
 		// [I2]2回目以降の入力先では，標準入力(infile_fd)をp_fd[0]する
 		ft_printf("[I2]\n");
-		// if (dup2(data->p_fd[0], STDIN_FILENO) == -1)
 		if (dup2(data->pipe_fd[data->cmd_i - 1][0], STDIN_FILENO) == -1)
 		{
-			put_error(DUP_ERROR);
+			put_error("failed to dup\n");
 			exit(1);
 		}
-		// close_fd(data->p_fd[0]);
-		// close_fd(data->p_fd[1]);
 		close_fd(data->pipe_fd[data->cmd_i - 1][0]);
 		close_fd(data->pipe_fd[data->cmd_i - 1][1]);
 	}
@@ -671,23 +646,15 @@ void set_input_fd(t_data *data)
 
 void set_output_fd(t_data *data)
 {
-// if (dup2(data->outfile_fd, STDOUT_FILENO) == -1)
-// {
-// 	put_error(DUP_ERROR);
-// 	exit(1);
-// }
 	if (data->cmd_absolute_path[data->cmd_i + 1] != NULL)
 	{
 		// [O1]さいごより1回前の出力先では，標準出力をp_fd[1]にする
 		ft_printf("[O1]\n");
-		// if (dup2(data->p_fd[1], STDOUT_FILENO) == -1)
 		if (dup2(data->pipe_fd[data->cmd_i][1], STDOUT_FILENO) == -1)
 		{
-			put_error(DUP_ERROR);
+			put_error("failed to dup\n");
 			exit(1);
 		}
-		// close_fd(data->p_fd[0]);
-		// close_fd(data->p_fd[1]);
 		close_fd(data->pipe_fd[data->cmd_i][0]);
 		close_fd(data->pipe_fd[data->cmd_i][1]);
 	}
@@ -697,11 +664,10 @@ void set_output_fd(t_data *data)
 		ft_printf("[O2]\n");
 		if (dup2(data->outfile_fd, STDOUT_FILENO) == -1)
 		{
-			put_error(DUP_ERROR);
+			put_error("failed to dup\n");
 			exit(1);
 		}
 		close_fd(data->outfile_fd);
-		// close_fd(STDOUT_FILENO);
 	}
 }
 
@@ -714,7 +680,7 @@ void exec_child(char **envp, t_data *data)
 	check_malloc(cmd);
 	set_input_fd(data);
 	set_output_fd(data);
-	execve(data->cmd_absolute_path[data->cmd_i], cmd, envp);	// コマンドを実行する
+	execve(data->cmd_absolute_path[data->cmd_i], cmd, envp);
 	exit(0);
 }
 
@@ -722,7 +688,7 @@ void check_fork(pid_t child_pid)
 {
 	if (child_pid < 0)
 	{
-		put_error(FORK_ERROR);
+		put_error("failed to fork\n");
 		exit(1);
 	}
 }
@@ -731,7 +697,7 @@ void check_wait(int ret)
 {
 	if (ret == -1)
 	{
-		put_error(WAIT_ERROR);
+		put_error("failed to wait\n");
 		exit(1);
 	}
 }
@@ -750,24 +716,20 @@ void wait_children(t_data *data)
 	}
 }
 
+void create_child(t_data *data)
+{
+	data->child_pid = fork();
+	check_fork(data->child_pid);
+}
+
 void pipex(char **envp, t_data *data)
 {
-	// exec_child(envp, data);
 	while (data->cmd_absolute_path[data->cmd_i])
 	{
-		get_pipe(data);	//	多段パイプの場合，2回目以降に取得するパイプは新しいパイプである必要あり．
-		data->child1_pid = fork();
-		check_fork(data->child1_pid);
-		if (data->child1_pid == 0)
-			exec_child(envp, data);	//	多段パイプの場合，2回目以降のinput_fdでは前のパイプを参照する必要あり．
-
-		// data->child2_pid = fork();
-		// check_fork(data->child2_pid);
-		// if (data->child2_pid == 0)
-		// 	exec_child(envp, data);
-		// data->cmd_i++;
-		// close_fd(data->p_fd[0]);
-		// close_fd(data->p_fd[1]);
+		get_pipe(data);
+		create_child(data);
+		if (data->child_pid == 0)
+			exec_child(envp, data);
 		if (data->cmd_i > 0)
 		{
 			close_fd(data->pipe_fd[data->cmd_i - 1][0]);
