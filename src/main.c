@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: toshota <toshota@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/23 17:27:50 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/23 20:48:40 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,21 @@ int is_specified_here_doc(char **argv)
 }
 
 void	all_free(char **ptr)
+{
+	int	i;
+
+	i = 0;
+	while (ptr[i])
+	{
+		free(ptr[i]);
+		ptr[i] = NULL;
+		i++;
+	}
+	free(ptr);
+	ptr = NULL;
+}
+
+void	all_free_int(int **ptr)
 {
 	int	i;
 
@@ -567,7 +582,8 @@ void get_pipe(t_data *data)
 {
 	int ret;
 
-	ret = pipe(data->p_fd);
+	ret = pipe(data->pipe_fd[data->cmd_i]);
+	// ret = pipe(data->p_fd);
 	check_pipe(ret);
 }
 
@@ -576,12 +592,31 @@ void init_util_data(t_data *data)
 	data->cmd_i = 0;
 }
 
+int **get_multiple_pipe(int argc, char **argv)
+{
+	int	**pipe_fd;
+	int	index;
+
+	index = 0;
+	pipe_fd = (int **)malloc(sizeof(int *) * (get_cmd_count(argc, argv) + 1));
+	check_malloc(pipe_fd);
+	while (index < get_cmd_count(argc, argv))
+	{
+		pipe_fd[index] = (int *)malloc(sizeof(int) * 2);
+		check_malloc(pipe_fd);
+		index++;
+	}
+	pipe_fd[index] = NULL;
+	return (pipe_fd);
+}
+
 void	get_data(int argc, char **argv, char **envp, t_data *data)
 {
 	init_util_data(data);
 	get_cmd_absolute_path(argc, argv, envp, data);
 	get_infile_fd(argv, &data->infile_fd);
 	get_outfile_fd(argc, argv, &data->outfile_fd);
+	data->pipe_fd = get_multiple_pipe(argc, argv);
 }
 
 void set_input_fd(t_data *data)
@@ -602,17 +637,22 @@ void set_input_fd(t_data *data)
 			exit(1);
 		}
 		close_fd(data->infile_fd);
+		// close_fd(STDIN_FILENO);
 	}
 	else
 	{
 		// [I2]2回目以降の入力先では，標準入力(infile_fd)をp_fd[0]する
 		ft_printf("[I2]\n");
-		if (dup2(data->p_fd[0], STDIN_FILENO) == -1)
+		// if (dup2(data->p_fd[0], STDIN_FILENO) == -1)
+		if (dup2(data->pipe_fd[data->cmd_i - 1][0], STDIN_FILENO) == -1)
 		{
 			put_error(DUP_ERROR);
 			exit(1);
 		}
-		close_fd(data->p_fd[1]);
+		// close_fd(data->p_fd[0]);
+		// close_fd(data->p_fd[1]);
+		close_fd(data->pipe_fd[data->cmd_i - 1][0]);
+		close_fd(data->pipe_fd[data->cmd_i - 1][1]);
 	}
 }
 
@@ -627,12 +667,16 @@ void set_output_fd(t_data *data)
 	{
 		// [O1]さいごより1回前の出力先では，標準出力をp_fd[1]にする
 		ft_printf("[O1]\n");
-		if (dup2(data->p_fd[1], STDOUT_FILENO) == -1)
+		// if (dup2(data->p_fd[1], STDOUT_FILENO) == -1)
+		if (dup2(data->pipe_fd[data->cmd_i][1], STDOUT_FILENO) == -1)
 		{
 			put_error(DUP_ERROR);
 			exit(1);
 		}
-		close_fd(data->p_fd[0]);
+		// close_fd(data->p_fd[0]);
+		// close_fd(data->p_fd[1]);
+		close_fd(data->pipe_fd[data->cmd_i][0]);
+		close_fd(data->pipe_fd[data->cmd_i][1]);
 	}
 	else
 	{
@@ -643,6 +687,8 @@ void set_output_fd(t_data *data)
 			put_error(DUP_ERROR);
 			exit(1);
 		}
+		close_fd(data->outfile_fd);
+		// close_fd(STDOUT_FILENO);
 	}
 }
 
@@ -656,6 +702,7 @@ void exec_child(char **envp, t_data *data)
 	set_input_fd(data);
 	set_output_fd(data);
 	execve(data->cmd_absolute_path[data->cmd_i], cmd, envp);	// コマンドを実行する
+	exit(0);
 }
 
 void check_fork(pid_t child_pid)
@@ -676,14 +723,18 @@ void check_wait(int ret)
 	}
 }
 
-void wait_children(void)
+void wait_children(t_data *data)
 {
 	int ret;
+	int i;
 
-	ret = wait(NULL);
-	check_wait(ret);
-	ret = wait(NULL);
-	check_wait(ret);
+	i = 0;
+	while(i < data->cmd_i)
+	{
+		ret = wait(NULL);
+		check_wait(ret);
+		i++;
+	}
 }
 
 void pipex(char **envp, t_data *data)
@@ -691,22 +742,27 @@ void pipex(char **envp, t_data *data)
 	// exec_child(envp, data);
 	while (data->cmd_absolute_path[data->cmd_i])
 	{
-		get_pipe(data);
+		get_pipe(data);	//	多段パイプの場合，2回目以降に取得するパイプは新しいパイプである必要あり．
 		data->child1_pid = fork();
 		check_fork(data->child1_pid);
 		if (data->child1_pid == 0)
-			exec_child(envp, data);
+			exec_child(envp, data);	//	多段パイプの場合，2回目以降のinput_fdでは前のパイプを参照する必要あり．
 
-		data->cmd_i++;
-		get_pipe(data);
-		data->child2_pid = fork();
-		check_fork(data->child2_pid);
-		if (data->child2_pid == 0)
-			exec_child(envp, data);
-
-		wait_children();
+		// data->child2_pid = fork();
+		// check_fork(data->child2_pid);
+		// if (data->child2_pid == 0)
+		// 	exec_child(envp, data);
+		// data->cmd_i++;
+		// close_fd(data->p_fd[0]);
+		// close_fd(data->p_fd[1]);
+		if (data->cmd_i > 0)
+		{
+			close_fd(data->pipe_fd[data->cmd_i - 1][0]);
+			close_fd(data->pipe_fd[data->cmd_i - 1][1]);
+		}
 		data->cmd_i++;
 	}
+	wait_children(data);
 }
 
 	// p_fd[0]およびp_fd[1]を用いるためにpipeを開く．
@@ -726,6 +782,7 @@ void end_pipex(char **argv, t_data *data)
 {
 	all_free(data->cmd_absolute_path);
 	all_free(data->cmd_absolute_path_with_option);
+	all_free_int(data->pipe_fd);
 	if (is_specified_here_doc(argv))
 		unlink(HERE_DOC_FILE_NAME);
 	else

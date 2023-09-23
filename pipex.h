@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipex.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: toshota <toshota@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 09:29:26 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/23 15:45:15 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/23 20:20:26 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ typedef struct s_data
 	char	**cmd_absolute_path;
 	char	**cmd_absolute_path_with_option;
 	int		cmd_i;
+	int		**pipe_fd;
 }			t_data;
 
 # define TOO_FEW_ARGC_ERROR \
