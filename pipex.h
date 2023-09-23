@@ -6,13 +6,14 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 09:29:26 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/24 02:28:09 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/24 02:49:59 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef PIPEX_H
 # define PIPEX_H
 
+# include "libft/libft.h"
 # include <sys/types.h>
 
 typedef struct s_data

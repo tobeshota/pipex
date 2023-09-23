@@ -6,17 +6,16 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/24 02:44:46 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/24 02:49:23 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../libft/libft.h"
 #include "../pipex.h"
 
-__attribute__((destructor)) static void destructor()
-{
-	system("leaks -q pipex");
-}
+// __attribute__((destructor)) static void destructor()
+// {
+// 	system("leaks -q pipex");
+// }
 
 void	put_error(char *err_msg)
 {
