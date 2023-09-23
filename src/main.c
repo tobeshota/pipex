@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/23 20:48:40 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/23 23:14:58 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -510,18 +510,31 @@ void	get_cmd_absolute_path(int argc, char **argv, char **envp, t_data *data)
 	all_free(cmd_option);
 }
 
+
+int	ft_strcmp(const char *s1, const char *s2)
+{
+	size_t	i;
+
+	i = 0;
+	while (s1[i] != '\0' && s2[i] != '\0' && s1[i] == s2[i])
+		i++;
+	return ((unsigned char)s1[i] - (unsigned char)s2[i]);
+}
+
 void proc_here_doc(char *limitter, int infile_fd)
 {
 	char *line;
 
 	line = get_next_line(STDIN_FILENO);
-	while(ft_strncmp(line, limitter, ft_strlen(limitter)))
+	while(ft_strncmp(line, limitter, ft_strlen(line)) || line[ft_strlen(line)] != '\n')
 	{
 		ft_putstr_fd(line, infile_fd);
 		free(line);
 		line = get_next_line(STDIN_FILENO);
 	}
 	free(line);
+	close(infile_fd);
+	infile_fd = open_file(HERE_DOC_FILE_NAME, INFILE_HERE_DOC);
 }
 
 /* ■ファイルおよびコマンドは適切なものであるかを確かめる
