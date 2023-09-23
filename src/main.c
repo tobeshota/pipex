@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/24 02:33:34 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/24 02:44:46 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -494,15 +494,19 @@ int	ft_strcmp(const char *s1, const char *s2)
 void proc_here_doc(char *limitter, int infile_fd)
 {
 	char *line;
+	char *limitter_endl;
 
 	line = get_next_line(STDIN_FILENO);
-	while(ft_strncmp(line, limitter, ft_strlen(line)) || line[ft_strlen(line)] != '\n')
+	limitter_endl = ft_strjoin(limitter, "\n");
+	check_malloc(limitter_endl);
+	while(ft_strncmp(line, limitter_endl, ft_strlen(line)))
 	{
 		ft_putstr_fd(line, infile_fd);
 		free(line);
 		line = get_next_line(STDIN_FILENO);
 	}
 	free(line);
+	free(limitter_endl);
 	close_fd(infile_fd);
 	infile_fd = open_file(HERE_DOC_FILE_PATH, INFILE_HERE_DOC);
 }
@@ -744,5 +748,5 @@ cc -Wall -Wextra -Werror main.c ../libft/libft.a -o pipex
 ./pipex infile "ls -a" cat outfile
 ./pipex infile "ls -a" cat ../../a.out outfile
 ./pipex infile "ls -a" brew /bin/cat ../../a.out fuga/a.out outfile
-./pipex here_doc wow ls cat outfile
+./pipex here_doc wow cat sort outfile
 */
