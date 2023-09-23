@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/24 02:19:21 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/24 02:33:34 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,21 +16,6 @@
 __attribute__((destructor)) static void destructor()
 {
 	system("leaks -q pipex");
-}
-
-void print_data(t_data *data, char *msg)
-{
-    ft_printf("\n\n\n【%s】\n", msg);
-	ft_printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-    ft_printf("\t\t\t%s\t%d\n", "child_pid", data->child_pid);
-    ft_printf("\t\t\t%s\t%d\n", "infile_fd", data->infile_fd);
-    ft_printf("\t\t\t%s\t%d\n", "outfile_fd", data->outfile_fd);
-    ft_printf("\t\t\t%s\t\t%d\n", "cmd_i", data->cmd_i);
-for (int i = 0; data->cmd_absolute_path[i]; i++)
-    ft_printf("\tdata->cmd_absolute_path[%d]\t%s\n", i, data->cmd_absolute_path[i]);
-for (int i = 0; data->cmd_absolute_path_with_option[i]; i++)
-    ft_printf("data->cmd_absolute_path_with_option[%d]\t%s\n", i, data->cmd_absolute_path_with_option[i]);
-    ft_printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n\n");
 }
 
 void	put_error(char *err_msg)
@@ -60,7 +45,7 @@ int is_specified_here_doc(char **argv)
 	return (!ft_strncmp(argv[1], "here_doc", ft_strlen("here_doc")));
 }
 
-void	all_free(char **ptr)
+void	all_free_tab(char **ptr)
 {
 	int	i;
 
@@ -132,7 +117,7 @@ int	is_infile_valid(char *infile)
 	int fd;
 
 	if (infile == INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC)
-		fd = open_file(HERE_DOC_FILE_NAME, INFILE_HERE_DOC);
+		fd = open_file(HERE_DOC_FILE_PATH, INFILE_HERE_DOC);
 	else
 		fd = open_file(infile, INFILE);
 	close_fd(fd);
@@ -413,7 +398,7 @@ void convert_relative_path_to_absolute_path(char ***cmd_absolute_path, int cmd_i
 	tmp = cmd_absolute_path[0][cmd_i];
 	cmd_absolute_path[0][cmd_i] = ft_strjoin(pwd_for_relative_path, cmd_absolute_path[0][cmd_i]);
 	free(tmp);
-	all_free(pwd);
+	all_free_tab(pwd);
 	free(pwd_for_relative_path);
 }
 
@@ -488,15 +473,13 @@ void	get_cmd_absolute_path(int argc, char **argv, char **envp, t_data *data)
 	char	**cmd_option;
 
 	get_env_path(&env_path, envp);
-// env_path = ft_split("PATH=/Library/Frameworks/Python.framework/Versions/3.6/bin/:/Users/tobeshota/anaconda3/condabin/:/opt/homebrew/opt/node@18/bin/:/Users/tobeshota/.cargo/bin/:/usr/local/Qt-5.15.10/bin/:/opt/homebrew/opt/pyqt@5/5 5.15.7_2/bin/:/opt/homebrew/opt/qt@5/bin/:/Users/tobeshota/.nodebrew/current/bin/:/Users/tobeshota/.pyenv/shims/:/Users/tobeshota/.pyenv/bin/:/Library/Frameworks/Python.framework/Versions/3.10/bin/:/usr/local/bin/:/usr/bin/:/bin/:/usr/sbin/:/sbin/:/opt/X11/bin/:/Users/tobeshota/workspace/command", ':');
 	get_cmd_name_from_arg(argc, argv, &data->cmd_absolute_path);
 	get_cmd_option(argc, argv, &data->cmd_absolute_path, &cmd_option);
 	add_absolute_path_to_cmd_name(&data->cmd_absolute_path, env_path, envp);
 	get_cmd_absolute_path_with_option(argc, argv, &cmd_option, data);
-	all_free(env_path);
-	all_free(cmd_option);
+	all_free_tab(env_path);
+	all_free_tab(cmd_option);
 }
-
 
 int	ft_strcmp(const char *s1, const char *s2)
 {
@@ -521,7 +504,7 @@ void proc_here_doc(char *limitter, int infile_fd)
 	}
 	free(line);
 	close_fd(infile_fd);
-	infile_fd = open_file(HERE_DOC_FILE_NAME, INFILE_HERE_DOC);
+	infile_fd = open_file(HERE_DOC_FILE_PATH, INFILE_HERE_DOC);
 }
 
 /* ■ファイルおよびコマンドは適切なものであるかを確かめる
@@ -542,7 +525,7 @@ void get_infile_fd(char **argv, int *infile_fd)
 {
 	if (is_specified_here_doc(argv))
 	{
-		*infile_fd = open_file(HERE_DOC_FILE_NAME, INFILE_HERE_DOC);
+		*infile_fd = open_file(HERE_DOC_FILE_PATH, INFILE_HERE_DOC);
 		proc_here_doc(argv[2], *infile_fd);
 	}
 	else
@@ -578,18 +561,13 @@ void check_pipe(int ret)
 	}
 }
 
-void get_pipe(t_data *data)
+void get_pipe(t_data *data, int *cmd_i)
 {
 	int ret;
 
-	ret = pipe(data->pipe_fd[data->cmd_i]);
+	ret = pipe(data->pipe_fd[*cmd_i]);
 	// ret = pipe(data->p_fd);
 	check_pipe(ret);
-}
-
-void init_util_data(t_data *data)
-{
-	data->cmd_i = 0;
 }
 
 void get_multiple_pipe(int argc, char **argv, t_data *data)
@@ -610,19 +588,17 @@ void get_multiple_pipe(int argc, char **argv, t_data *data)
 
 void	get_data(int argc, char **argv, char **envp, t_data *data)
 {
-	init_util_data(data);
 	get_cmd_absolute_path(argc, argv, envp, data);
 	get_infile_fd(argv, &data->infile_fd);
 	get_outfile_fd(argc, argv, &data->outfile_fd);
 	get_multiple_pipe(argc, argv, data);
 }
 
-void set_input_fd(t_data *data)
+void set_input_fd(t_data *data, int *cmd_i)
 {
-	if (data->cmd_i == 0)
+	if (*cmd_i == 0)
 	{
 		// [I1]さいしょの入力先では，標準入力をinfile_fdにする
-		ft_printf("[I1]\n");
 		if (dup2(data->infile_fd, STDIN_FILENO) == -1)
 		{
 			put_error("failed to dup\n");
@@ -633,35 +609,32 @@ void set_input_fd(t_data *data)
 	else
 	{
 		// [I2]2回目以降の入力先では，標準入力(infile_fd)をp_fd[0]する
-		ft_printf("[I2]\n");
-		if (dup2(data->pipe_fd[data->cmd_i - 1][0], STDIN_FILENO) == -1)
+		if (dup2(data->pipe_fd[*cmd_i - 1][0], STDIN_FILENO) == -1)
 		{
 			put_error("failed to dup\n");
 			exit(1);
 		}
-		close_fd(data->pipe_fd[data->cmd_i - 1][0]);
-		close_fd(data->pipe_fd[data->cmd_i - 1][1]);
+		close_fd(data->pipe_fd[*cmd_i - 1][0]);
+		close_fd(data->pipe_fd[*cmd_i - 1][1]);
 	}
 }
 
-void set_output_fd(t_data *data)
+void set_output_fd(t_data *data, int *cmd_i)
 {
-	if (data->cmd_absolute_path[data->cmd_i + 1] != NULL)
+	if (data->cmd_absolute_path[*cmd_i + 1] != NULL)
 	{
 		// [O1]さいごより1回前の出力先では，標準出力をp_fd[1]にする
-		ft_printf("[O1]\n");
-		if (dup2(data->pipe_fd[data->cmd_i][1], STDOUT_FILENO) == -1)
+		if (dup2(data->pipe_fd[*cmd_i][1], STDOUT_FILENO) == -1)
 		{
 			put_error("failed to dup\n");
 			exit(1);
 		}
-		close_fd(data->pipe_fd[data->cmd_i][0]);
-		close_fd(data->pipe_fd[data->cmd_i][1]);
+		close_fd(data->pipe_fd[*cmd_i][0]);
+		close_fd(data->pipe_fd[*cmd_i][1]);
 	}
 	else
 	{
 		// [O2]さいごの出力先では，標準出力(data->p_fd[1])をoutfile_fdにする
-		ft_printf("[O2]\n");
 		if (dup2(data->outfile_fd, STDOUT_FILENO) == -1)
 		{
 			put_error("failed to dup\n");
@@ -671,17 +644,15 @@ void set_output_fd(t_data *data)
 	}
 }
 
-void exec_child(char **envp, t_data *data)
+void exec_child(char **envp, t_data *data, int *cmd_i)
 {
 	char **cmd;
 
-	ft_printf("%s\n", data->cmd_absolute_path[data->cmd_i]);
-	cmd = ft_split(data->cmd_absolute_path_with_option[data->cmd_i], ' ');
+	cmd = ft_split(data->cmd_absolute_path_with_option[*cmd_i], ' ');
 	check_malloc(cmd);
-	set_input_fd(data);
-	set_output_fd(data);
-	execve(data->cmd_absolute_path[data->cmd_i], cmd, envp);
-	exit(0);
+	set_input_fd(data, cmd_i);
+	set_output_fd(data, cmd_i);
+	execve(data->cmd_absolute_path[*cmd_i], cmd, envp);
 }
 
 void check_fork(pid_t child_pid)
@@ -702,13 +673,13 @@ void check_wait(int ret)
 	}
 }
 
-void wait_children(t_data *data)
+void wait_children(int *cmd_i)
 {
 	int ret;
 	int i;
 
 	i = 0;
-	while(i < data->cmd_i)
+	while(i < *cmd_i)
 	{
 		ret = wait(NULL);
 		check_wait(ret);
@@ -724,42 +695,32 @@ void create_child(t_data *data)
 
 void pipex(char **envp, t_data *data)
 {
-	while (data->cmd_absolute_path[data->cmd_i])
+	int cmd_i;
+
+	cmd_i = 0;
+	while (data->cmd_absolute_path[cmd_i])
 	{
-		get_pipe(data);
+		get_pipe(data, &cmd_i);
 		create_child(data);
 		if (data->child_pid == 0)
-			exec_child(envp, data);
-		if (data->cmd_i > 0)
+			exec_child(envp, data, &cmd_i);
+		if (cmd_i > 0)
 		{
-			close_fd(data->pipe_fd[data->cmd_i - 1][0]);
-			close_fd(data->pipe_fd[data->cmd_i - 1][1]);
+			close_fd(data->pipe_fd[cmd_i - 1][0]);
+			close_fd(data->pipe_fd[cmd_i - 1][1]);
 		}
-		data->cmd_i++;
+		cmd_i++;
 	}
-	wait_children(data);
+	wait_children(&cmd_i);
 }
-
-	// p_fd[0]およびp_fd[1]を用いるためにpipeを開く．
-	// pipeおよびexecveを用いるためにforkで現在のプロセス（親プロセス）を複製して新しいプロセス（子プロセス）を生成する．
-	// <>forkの出力値が0より小さい数だったら（子プロセスの生成に失敗したら），エラー終了する．
-	// <>forkの出力値が0だったら（子プロセスのpidが渡されたら），子プロセスを実行する．
-		// コマンドの入力先を指定する（コマンドの入力先fdを標準入力に変える）．
-			// はじめ　infile_fd					を標準入力に変える
-			// いつも　p_fd[0]（パイプの読み取り側）	を標準入力に変える
-		// コマンドの出力先fdを指定する（コマンドの出力先fdを標準出力に変える）
-			// いつも　p_fd[1]（パイプの書き込み側）	を標準出力に変える
-			// おわり　outfile_fd					を標準出力に変える
-		// execveでコマンドを実行する．
-	// <>forkの出力値が0より大きい数だったら（親プロセスのpidが渡されたら），親プロセスを実行する．
 
 void end_pipex(char **argv, t_data *data)
 {
-	all_free(data->cmd_absolute_path);
-	all_free(data->cmd_absolute_path_with_option);
+	all_free_tab(data->cmd_absolute_path);
+	all_free_tab(data->cmd_absolute_path_with_option);
 	all_free_int(data->pipe_fd);
 	if (is_specified_here_doc(argv))
-		unlink(HERE_DOC_FILE_NAME);
+		unlink(HERE_DOC_FILE_PATH);
 	else
 		close_fd(data->infile_fd);
 	close_fd(data->outfile_fd);
@@ -769,19 +730,16 @@ int	main(int argc, char **argv, char **envp)
 {
 	t_data data;
 
-// argv = ft_split("./pipex infile cat sort outfile", ' ');
-// argc = 6;
 	check_arg(argc, argv);
 	get_data(argc, argv, envp, &data);
 	pipex(envp, &data);
 	end_pipex(argv, &data);
-// all_free(argv);
 }
 
 /*
 gcc -g main.c ../libft/libft.a -o pipex
-
 cc -Wall -Wextra -Werror main.c ../libft/libft.a -o pipex
+
 ./pipex infile cat sort outfile
 ./pipex infile "ls -a" cat outfile
 ./pipex infile "ls -a" cat ../../a.out outfile

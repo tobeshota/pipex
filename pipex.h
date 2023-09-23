@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 09:29:26 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/24 02:09:53 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/24 02:28:09 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,14 +22,13 @@ typedef struct s_data
 	int		outfile_fd;
 	char	**cmd_absolute_path;
 	char	**cmd_absolute_path_with_option;
-	int		cmd_i;
 	int		**pipe_fd;
 }			t_data;
 
 # define TRUE 1
 # define FALSE 0
 
-# define HERE_DOC_FILE_NAME "/tmp/here_doc"
+# define HERE_DOC_FILE_PATH "/tmp/here_doc"
 
 # define INFILE 0
 # define INFILE_HERE_DOC 1
