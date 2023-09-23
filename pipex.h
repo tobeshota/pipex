@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 09:29:26 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/23 12:06:35 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/23 15:45:15 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,9 +24,7 @@ typedef struct s_data
 	int		outfile_fd;
 	char	**cmd_absolute_path;
 	char	**cmd_absolute_path_with_option;
-	int		arg_i;
 	int		cmd_i;
-	int		argc;
 }			t_data;
 
 # define TOO_FEW_ARGC_ERROR \
@@ -44,6 +42,8 @@ typedef struct s_data
 # define PIPE_ERROR "failed to create pipe\n"
 # define DUP_ERROR "failed to dup\n"
 # define FORK_ERROR "failed to fork\n"
+# define CLOSE_ERROR "failed to close\n"
+# define WAIT_ERROR "failed to wait\n"
 
 # define TRUE 1
 # define FALSE 0
