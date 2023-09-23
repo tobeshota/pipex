@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 09:29:26 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/23 20:20:26 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/23 22:18:04 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ typedef struct s_data
 # define TRUE 1
 # define FALSE 0
 
-# define HERE_DOC_FILE_NAME "here_doc"
+# define HERE_DOC_FILE_NAME "/tmp/here_doc"
 
 # define INFILE 0
 # define INFILE_HERE_DOC 1
