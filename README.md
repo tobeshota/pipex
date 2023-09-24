@@ -30,18 +30,18 @@ make
 #### Handle multiple pipes
 This:
 ```
-./pipex infile cmd1 cmd2 ... cmdn outfile
+./pipex file1 cmd1 cmd2 ... cmdn file2
 ```
 behaves like:
 ```
-< infile cmd1 | cmd2 ... | cmdn > outfile
+< file1 cmd1 | cmd2 ... | cmdn > file2
 ```
 #### Handle heredoc
 This:
 ```
-./pipex here_doc LIMITTER cmd1 cmd2 ... cmdn outfile
+./pipex here_doc LIMITTER cmd1 cmd2 ... cmdn file2
 ```
 behaves like:
 ```
-<< LIMITTER cmd1 | cmd2 ... | cmdn >> outfile
+<< LIMITTER cmd1 | cmd2 ... | cmdn >> file2
 ```
