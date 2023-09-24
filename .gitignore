@@ -1,5 +1,5 @@
 *.o
-src/pipex*
+pipex
 *.a
 .vscode*
 infile
