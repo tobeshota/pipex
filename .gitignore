@@ -2,3 +2,5 @@
 src/pipex*
 *.a
 .vscode*
+infile
+outfile
