@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/24 12:14:49 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/24 15:27:34 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/25 02:16:35 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,9 +59,9 @@ static int	is_argc_valid(int argc, char **argv)
 
 static int	is_argv_valid(int argc, char **argv)
 {
-	if (is_infile_valid(get_infile(argv)) == FALSE)
-		return (FALSE);
 	if (is_outfile_valid(get_infile(argv), get_outfile(argc, argv)) == FALSE)
+		return (FALSE);
+	if (is_infile_valid(get_infile(argv)) == FALSE)
 		return (FALSE);
 	return (TRUE);
 }
