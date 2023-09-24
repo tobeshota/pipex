@@ -6,7 +6,7 @@
 #    By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/26 19:52:48 by toshota           #+#    #+#              #
-#    Updated: 2023/09/24 10:40:31 by toshota          ###   ########.fr        #
+#    Updated: 2023/09/24 14:58:11 by toshota          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -42,7 +42,7 @@ $(NAME):	$(OBJS)
 all:		$(NAME)
 
 bonus:
-			make WITH_BONUS=1
+	@ make WITH_BONUS=1
 
 .c.o:		$(OBJS)
 	@ $(CC) $(CFLAGS) -I $(INCS) -c $< -o $@
