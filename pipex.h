@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 09:29:26 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/24 12:59:23 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/24 13:13:05 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,63 +35,40 @@ typedef struct s_data
 # define OUTFILE_HERE_DOC 3
 # define INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC 0
 
-// utils2.c
 int			open_file(char *file, int file_type);
 void		close_fd(int fd);
 void		add_slash_eos(char ***path);
-
-// utils1.c
 void		all_free_tab(char **ptr);
 void		put_error(char *err_msg);
 char		*ft_strrnchr(const char *s, int c, int n);
 size_t		strlen_until_c(char *str, char c);
-
-// check_func_is_worked.c
 void		check_malloc(void *ptr);
 void		check_pipe(int ret);
 void		check_fork(pid_t child_pid);
 void		check_close(int ret);
 void		check_wait(int ret);
-
-// get_cmd_absolute_path.c
 int			get_cmd_count(int argc, char **argv);
 void		get_cmd_option(int argc, char **argv, char ***cmd_absolute_path,
 				char ***cmd_option);
 void		get_cmd_absolute_path(int argc, char **argv, char **envp,
 				t_data *data);
-
-// get_cmd_absolute_path_utils.c
 void		add_absolute_path_to_cmd_name(char ***cmd_absolute_path,
 				char **env_path, char **envp);
-
-// get_utils.c
 void		get_env_path(char ***env_path, char **envp);
 void		get_pwd(char ***pwd_path, char **envp);
 int			get_down_count_from_pwd(char *relative_path);
 char		*get_pwd_for_relative_path(char ***pwd_path,
 				int down_count_from_pwd);
 void		get_pipe(t_data *data, int *cmd_i);
-
-// get_file.c
 char		*get_infile(char **argv);
 char		*get_outfile(int argc, char **argv);
-
-// check_arg.c
 void		check_arg(int argc, char **argv);
-
-// here_doc.c
 int			is_specified_here_doc(char **argv);
 void		proc_here_doc(char *limitter, int infile_fd);
-
-// is_utils.c
 int			is_cmd_relative_path(char ***cmd_absolute_path, int cmd_i);
 int			is_cmd_alreadly_absollute_path(char ***cmd_absolute_path,
 				int cmd_i);
-
-// pipex.c
 void		pipex(char **envp, t_data *data);
-
-// main.c
 void		get_data(int argc, char **argv, char **envp, t_data *data);
 void		end_pipex(char **argv, t_data *data);
 
