@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   get_utils.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
+/*   By: toshota <toshota@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/24 12:14:49 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/24 13:05:05 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/24 16:39:22 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,10 @@ void	get_env_path(char ***env_path, char **envp)
 	while (envp[i] && ft_strncmp(envp[i], "PATH=", ft_strlen("PATH=")))
 		i++;
 	if (envp[i] == NULL)
+	{
 		put_error("PATH not found\n");
+		exit(1);
+	}
 	*env_path = ft_split(envp[i] + ft_strlen("PATH="), ':');
 	check_malloc(env_path);
 	add_slash_eos(env_path);
