@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/24 11:29:32 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/24 11:44:55 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -303,7 +303,7 @@ void	get_cmd_option(int argc, char **argv, char ***cmd_absolute_path,
 	cmd_option[0][cmd_i] = NULL;
 }
 
-void	check_cmd(char *env_path)
+void	check_cmd_exist(char *env_path)
 {
 	if (env_path == NULL)
 	{
@@ -417,7 +417,7 @@ void	add_absolute_path_to_cmd_name_from_env_path(char ***cmd_absolute_path,
 		free(tmp);
 		env_i++;
 	}
-	check_cmd(env_path[env_i]);
+	check_cmd_exist(env_path[env_i]);
 }
 
 void	add_absolute_path_to_cmd_name(char ***cmd_absolute_path,
@@ -471,16 +471,6 @@ void	get_cmd_absolute_path(int argc, char **argv, char **envp, t_data *data)
 	get_cmd_absolute_path_with_option(argc, argv, &cmd_option, data);
 	all_free_tab(env_path);
 	all_free_tab(cmd_option);
-}
-
-int	ft_strcmp(const char *s1, const char *s2)
-{
-	size_t	i;
-
-	i = 0;
-	while (s1[i] != '\0' && s2[i] != '\0' && s1[i] == s2[i])
-		i++;
-	return ((unsigned char)s1[i] - (unsigned char)s2[i]);
 }
 
 void	proc_here_doc(char *limitter, int infile_fd)
