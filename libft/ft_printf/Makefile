@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: toshota <toshota@student.42.fr>            +#+  +:+       +#+         #
+#    By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/26 19:52:48 by toshota           #+#    #+#              #
-#    Updated: 2023/09/09 18:09:52 by toshota          ###   ########.fr        #
+#    Updated: 2023/09/24 10:41:00 by toshota          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -32,20 +32,20 @@ OBJS	=	$(SRCS:.c=.o)
 
 
 $(NAME):	$(OBJS)
-			$(AR) $(NAME) $(OBJS)
+	@ $(AR) $(NAME) $(OBJS)
 
 all:		$(NAME)
 
 bonus:		all
 
 .c.o:		$(OBJS)
-			$(CC) $(CFLAGS) -I $(INCS) -c $< -o $@
+	@ $(CC) $(CFLAGS) -I $(INCS) -c $< -o $(<:.c=.o)
 
 clean:
-			$(RM) $(OBJS) $(B_SRCS:.c=.o)
+	@ $(RM) $(OBJS) $(B_SRCS:.c=.o)
 
 fclean:		clean
-			$(RM) $(NAME)
+	@ $(RM) $(NAME)
 
 re:			fclean all
 
