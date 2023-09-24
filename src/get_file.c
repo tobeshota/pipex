@@ -1,28 +1,29 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   get_file.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/24 12:55:49 by toshota          ###   ########.fr       */
+/*   Created: 2023/09/24 12:14:49 by toshota           #+#    #+#             */
+/*   Updated: 2023/09/24 12:53:17 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../pipex.h"
 
-int	main(int argc, char **argv, char **envp)
+char	*get_infile(char **argv)
 {
-	t_data	data;
+	char	*infile;
 
-	check_arg(argc, argv);
-	get_data(argc, argv, envp, &data);
-	pipex(envp, &data);
-	end_pipex(argv, &data);
+	if (is_specified_here_doc(argv))
+		infile = INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC;
+	else
+		infile = argv[1];
+	return (infile);
 }
 
-// __attribute__((destructor)) static void destructor()
-// {
-// 	system("leaks -q pipex");
-// }
+char	*get_outfile(int argc, char **argv)
+{
+	return (argv[argc - 1]);
+}
