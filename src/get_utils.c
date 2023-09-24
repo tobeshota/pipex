@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   get_utils.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: toshota <toshota@student.42.fr>            +#+  +:+       +#+        */
+/*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/24 12:14:49 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/24 16:39:22 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/25 02:02:09 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,10 +66,10 @@ char	*get_pwd_for_relative_path(char ***pwd_path, int down_count_from_pwd)
 			- delete_len));
 }
 
-void	get_pipe(t_data *data, int *cmd_i)
+void	get_pipe(t_data *data, int cmd_i)
 {
 	int	ret;
 
-	ret = pipe(data->pipe_fd[*cmd_i]);
+	ret = pipe(data->pipe_fd[cmd_i]);
 	check_pipe(ret);
 }

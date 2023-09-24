@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 09:29:26 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/24 13:13:05 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/25 02:02:18 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ void		get_pwd(char ***pwd_path, char **envp);
 int			get_down_count_from_pwd(char *relative_path);
 char		*get_pwd_for_relative_path(char ***pwd_path,
 				int down_count_from_pwd);
-void		get_pipe(t_data *data, int *cmd_i);
+void		get_pipe(t_data *data, int cmd_i);
 char		*get_infile(char **argv);
 char		*get_outfile(int argc, char **argv);
 void		check_arg(int argc, char **argv);

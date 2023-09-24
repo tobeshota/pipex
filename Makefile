@@ -6,7 +6,7 @@
 #    By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/26 19:52:48 by toshota           #+#    #+#              #
-#    Updated: 2023/09/24 12:58:52 by toshota          ###   ########.fr        #
+#    Updated: 2023/09/25 02:09:56 by toshota          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -34,6 +34,7 @@ all:		$(NAME)
 $(NAME):	$(OBJS) $(INCS) Makefile
 	@ make -C $(LIBFT_DIR)
 	@ $(CC) $(CFLAGS) $(LIBFT_DIR)libft.a $(OBJS) -o $(NAME)
+	@ echo "compile to create an executable file: ./pipex"
 
 bonus:		all
 
@@ -43,11 +44,13 @@ bonus:		all
 clean:
 	@ make clean -C $(LIBFT_DIR)
 	@ $(RM) $(OBJS)
+	@ echo "clean"
 
 fclean:
 	@ make fclean -C $(LIBFT_DIR)
 	@ $(RM) $(OBJS)
 	@ $(RM) $(NAME) $(B_NAME)
+	@ echo "fclean"
 
 re:			fclean all
 
