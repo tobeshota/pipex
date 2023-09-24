@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/14 17:32:48 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/24 11:23:43 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/24 11:29:32 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,24 +22,24 @@ void	put_error(char *err_msg)
 	write(STDERR_FILENO, err_msg, ft_strlen(err_msg));
 }
 
-void check_close(int ret)
+void	check_close(int ret)
 {
-	if(ret < 0)
+	if (ret < 0)
 	{
 		put_error("failed to close\n");
 		exit(1);
 	}
 }
 
-void close_fd(int fd)
+void	close_fd(int fd)
 {
-	int ret;
+	int	ret;
 
 	ret = close(fd);
 	check_close(ret);
 }
 
-int is_specified_here_doc(char **argv)
+int	is_specified_here_doc(char **argv)
 {
 	return (!ft_strncmp(argv[1], "here_doc", ft_strlen("here_doc")));
 }
@@ -74,19 +74,19 @@ void	all_free_int(int **ptr)
 	ptr = NULL;
 }
 
-int is_argc_valid(int argc, char **argv)
+int	is_argc_valid(int argc, char **argv)
 {
 	if (argc < 5)
 	{
 		put_error("argc at least 5 as follows:\n./pipex infile cmd1 cmd2 outfile\n");
-		return FALSE;
+		return (FALSE);
 	}
 	if (is_specified_here_doc(argv) && argc < 6)
 	{
 		put_error("argc at least 6 as follows:\n./pipex here_doc LIMITTER cmd1 cmd2 outfile\n");
-		return FALSE;
+		return (FALSE);
 	}
-	return TRUE;
+	return (TRUE);
 }
 
 int	open_file(char *file, int file_type)
@@ -96,11 +96,14 @@ int	open_file(char *file, int file_type)
 	if (file_type == INFILE)
 		fd = open(file, O_RDONLY);
 	else if (file_type == INFILE_HERE_DOC)
-		fd = open(file, O_RDWR | O_CREAT | O_APPEND, S_IRWXU | S_IRWXG | S_IRWXO);
+		fd = open(file, O_RDWR | O_CREAT | O_APPEND,
+				S_IRWXU | S_IRWXG | S_IRWXO);
 	else if (file_type == OUTFILE)
-		fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU | S_IRWXG | S_IRWXO);
+		fd = open(file, O_WRONLY | O_CREAT | O_TRUNC,
+				S_IRWXU | S_IRWXG | S_IRWXO);
 	else if (file_type == OUTFILE_HERE_DOC)
-		fd = open(file, O_WRONLY | O_CREAT | O_APPEND, S_IRWXU | S_IRWXG | S_IRWXO);
+		fd = open(file, O_WRONLY | O_CREAT | O_APPEND,
+				S_IRWXU | S_IRWXG | S_IRWXO);
 	else
 		fd = -1;
 	if (fd == -1)
@@ -108,12 +111,12 @@ int	open_file(char *file, int file_type)
 		put_error("unable to open file\n");
 		exit(1);
 	}
-	return fd;
+	return (fd);
 }
 
 int	is_infile_valid(char *infile)
 {
-	int fd;
+	int	fd;
 
 	if (infile == INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC)
 		fd = open_file(HERE_DOC_FILE_PATH, INFILE_HERE_DOC);
@@ -121,38 +124,38 @@ int	is_infile_valid(char *infile)
 		fd = open_file(infile, INFILE);
 	close_fd(fd);
 	if (fd == -1)
-		return FALSE;
-	return TRUE;
+		return (FALSE);
+	return (TRUE);
 }
 
 int	is_outfile_valid(char *infile, char *outfile)
 {
-	int fd;
+	int	fd;
 
 	if (infile == INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC)
 		fd = open_file(outfile, OUTFILE_HERE_DOC);
 	else
 		fd = open_file(outfile, OUTFILE);
 	close_fd(fd);
-	if(fd == -1)
-		return FALSE;
-	return TRUE;
+	if (fd == -1)
+		return (FALSE);
+	return (TRUE);
 }
 
-char *get_infile(char **argv)
+char	*get_infile(char **argv)
 {
-	char *infile;
+	char	*infile;
 
 	if (is_specified_here_doc(argv))
 		infile = INFILE_NOT_SPECIFIED_BECAUSE_OF_HERE_DOC;
 	else
 		infile = argv[1];
-	return infile;
+	return (infile);
 }
 
-char *get_outfile(int argc, char **argv)
+char	*get_outfile(int argc, char **argv)
 {
-	return argv[argc - 1];
+	return (argv[argc - 1]);
 }
 
 void	check_malloc(void *ptr)
@@ -164,13 +167,13 @@ void	check_malloc(void *ptr)
 	}
 }
 
-void add_slash_eos(char ***path)
+void	add_slash_eos(char ***path)
 {
-	char *tmp;
-	int i;
+	char	*tmp;
+	int		i;
 
 	i = 0;
-	while(path[0][i])
+	while (path[0][i])
 	{
 		tmp = path[0][i];
 		path[0][i] = ft_strjoin(path[0][i], "/");
@@ -179,11 +182,12 @@ void add_slash_eos(char ***path)
 	}
 }
 
-int is_cmd_alreadly_absollute_path(char ***cmd_absolute_path, int cmd_i)
+int	is_cmd_alreadly_absollute_path(char ***cmd_absolute_path, int cmd_i)
 {
-	if (cmd_absolute_path[0][cmd_i][0] == '/' && ft_strchr(&cmd_absolute_path[0][cmd_i][1], '/'))
-		return TRUE;
-	return FALSE;
+	if (cmd_absolute_path[0][cmd_i][0] == '/'
+		&& ft_strchr(&cmd_absolute_path[0][cmd_i][1], '/'))
+		return (TRUE);
+	return (FALSE);
 }
 
 void	get_env_path(char ***env_path, char **envp)
@@ -214,10 +218,10 @@ void	get_pwd(char ***pwd_path, char **envp)
 	add_slash_eos(pwd_path);
 }
 
-int get_cmd_count(int argc, char **argv)
+int	get_cmd_count(int argc, char **argv)
 {
-	int cmd_count;
-	int i;
+	int	cmd_count;
+	int	i;
 
 	cmd_count = 0;
 	if (is_specified_here_doc(argv))
@@ -230,24 +234,26 @@ int get_cmd_count(int argc, char **argv)
 			cmd_count++;
 		i++;
 	}
-	return cmd_count;
+	return (cmd_count);
 }
 
-size_t strlen_until_c(char *str, char c)
+size_t	strlen_until_c(char *str, char c)
 {
-	size_t len;
+	size_t	len;
+
 	len = 0;
-	while(str[len] != '\0' && str[len] != c)
+	while (str[len] != '\0' && str[len] != c)
 		len++;
-	return len;
+	return (len);
 }
 
-void get_cmd_name_from_arg(int argc, char **argv, char ***cmd_absolute_path)
+void	get_cmd_name_from_arg(int argc, char **argv, char ***cmd_absolute_path)
 {
-	int arg_i;
-	int cmd_i;
+	int	arg_i;
+	int	cmd_i;
 
-	*cmd_absolute_path = (char **)malloc(sizeof(char *) * (get_cmd_count(argc, argv) + 1));
+	*cmd_absolute_path = (char **)malloc(sizeof(char *) * (get_cmd_count(argc,
+					argv) + 1));
 	check_malloc(*cmd_absolute_path);
 	if (is_specified_here_doc(argv))
 		arg_i = 3;
@@ -258,7 +264,8 @@ void get_cmd_name_from_arg(int argc, char **argv, char ***cmd_absolute_path)
 	{
 		if (!access(argv[arg_i], X_OK) || access(argv[arg_i], F_OK))
 		{
-			cmd_absolute_path[0][cmd_i] = ft_substr(argv[arg_i], 0, strlen_until_c(argv[arg_i], ' '));
+			cmd_absolute_path[0][cmd_i] = ft_substr(argv[arg_i], 0,
+					strlen_until_c(argv[arg_i], ' '));
 			check_malloc(cmd_absolute_path[0][cmd_i]);
 			cmd_i++;
 		}
@@ -267,12 +274,14 @@ void get_cmd_name_from_arg(int argc, char **argv, char ***cmd_absolute_path)
 	cmd_absolute_path[0][cmd_i] = NULL;
 }
 
-void get_cmd_option(int argc, char **argv, char ***cmd_absolute_path, char ***cmd_option)
+void	get_cmd_option(int argc, char **argv, char ***cmd_absolute_path,
+		char ***cmd_option)
 {
-	int arg_i;
-	int cmd_i;
+	int	arg_i;
+	int	cmd_i;
 
-	*cmd_option = (char **)malloc(sizeof(char *) * (get_cmd_count(argc, argv) + 1));
+	*cmd_option = (char **)malloc(sizeof(char *) * (get_cmd_count(argc, argv)
+				+ 1));
 	check_malloc(*cmd_option);
 	if (is_specified_here_doc(argv))
 		arg_i = 3;
@@ -283,7 +292,9 @@ void get_cmd_option(int argc, char **argv, char ***cmd_absolute_path, char ***cm
 	{
 		if (!access(argv[arg_i], X_OK) || access(argv[arg_i], F_OK))
 		{
-			cmd_option[0][cmd_i] = ft_substr(argv[arg_i], ft_strlen(cmd_absolute_path[0][cmd_i]), ft_strlen(argv[arg_i]));
+			cmd_option[0][cmd_i] = ft_substr(argv[arg_i],
+					ft_strlen(cmd_absolute_path[0][cmd_i]),
+					ft_strlen(argv[arg_i]));
 			check_malloc(cmd_option[0][cmd_i]);
 			cmd_i++;
 		}
@@ -292,7 +303,7 @@ void get_cmd_option(int argc, char **argv, char ***cmd_absolute_path, char ***cm
 	cmd_option[0][cmd_i] = NULL;
 }
 
-void check_cmd(char *env_path)
+void	check_cmd(char *env_path)
 {
 	if (env_path == NULL)
 	{
@@ -301,18 +312,19 @@ void check_cmd(char *env_path)
 	}
 }
 
-int is_cmd_relative_path(char ***cmd_absolute_path, int cmd_i)
+int	is_cmd_relative_path(char ***cmd_absolute_path, int cmd_i)
 {
-	if (cmd_absolute_path[0][cmd_i][0] != '/' && ft_strchr(&cmd_absolute_path[0][cmd_i][1], '/'))
-		return TRUE;
-	return FALSE;
+	if (cmd_absolute_path[0][cmd_i][0] != '/'
+		&& ft_strchr(&cmd_absolute_path[0][cmd_i][1], '/'))
+		return (TRUE);
+	return (FALSE);
 }
 
-int get_down_count_from_pwd(char *relative_path)
+int	get_down_count_from_pwd(char *relative_path)
 {
-	int down_count_from_pwd;
-	down_count_from_pwd = 0;
+	int	down_count_from_pwd;
 
+	down_count_from_pwd = 0;
 	while (ft_strnstr(relative_path, "../", ft_strlen(relative_path)))
 	{
 		down_count_from_pwd++;
@@ -344,45 +356,52 @@ char	*ft_strrnchr(const char *s, int c, int n)
 	return (0);
 }
 
-char *get_pwd_for_relative_path(char ***pwd_path, int down_count_from_pwd)
+char	*get_pwd_for_relative_path(char ***pwd_path, int down_count_from_pwd)
 {
-	int delete_len;
+	int	delete_len;
 
-	delete_len = ft_strlen(ft_strrnchr(pwd_path[0][0], '/', down_count_from_pwd) + 1);
+	delete_len = ft_strlen(ft_strrnchr(pwd_path[0][0], '/', down_count_from_pwd)
+			+ 1);
 	return ft_substr(pwd_path[0][0], 0, ft_strlen(pwd_path[0][0]) - delete_len);
 }
 
-void delete_relative_path(char ***cmd_absolute_path, int cmd_i)
+void	delete_relative_path(char ***cmd_absolute_path, int cmd_i)
 {
-	char *tmp;
+	char	*tmp;
+
 	tmp = cmd_absolute_path[0][cmd_i];
-	cmd_absolute_path[0][cmd_i] = ft_strtrim(cmd_absolute_path[0][cmd_i], "../");
+	cmd_absolute_path[0][cmd_i] = ft_strtrim(cmd_absolute_path[0][cmd_i],
+			"../");
 	free(tmp);
 	tmp = cmd_absolute_path[0][cmd_i];
 	cmd_absolute_path[0][cmd_i] = ft_strtrim(cmd_absolute_path[0][cmd_i], "./");
 	free(tmp);
 }
 
-void convert_relative_path_to_absolute_path(char ***cmd_absolute_path, int cmd_i, char **envp)
+void	convert_relative_path_to_absolute_path(char ***cmd_absolute_path,
+		int cmd_i, char **envp)
 {
 	char	*tmp;
 	char	**pwd;
 	char	*pwd_for_relative_path;
 
 	get_pwd(&pwd, envp);
-	pwd_for_relative_path = get_pwd_for_relative_path(&pwd, get_down_count_from_pwd(cmd_absolute_path[0][cmd_i]));
+	pwd_for_relative_path = get_pwd_for_relative_path(&pwd,
+			get_down_count_from_pwd(cmd_absolute_path[0][cmd_i]));
 	delete_relative_path(cmd_absolute_path, cmd_i);
 	tmp = cmd_absolute_path[0][cmd_i];
-	cmd_absolute_path[0][cmd_i] = ft_strjoin(pwd_for_relative_path, cmd_absolute_path[0][cmd_i]);
+	cmd_absolute_path[0][cmd_i] = ft_strjoin(pwd_for_relative_path,
+			cmd_absolute_path[0][cmd_i]);
 	free(tmp);
 	all_free_tab(pwd);
 	free(pwd_for_relative_path);
 }
 
-void add_absolute_path_to_cmd_name_from_env_path(char ***cmd_absolute_path, char **env_path, int cmd_i)
+void	add_absolute_path_to_cmd_name_from_env_path(char ***cmd_absolute_path,
+		char **env_path, int cmd_i)
 {
-	int env_i;
-	char *tmp;
+	int		env_i;
+	char	*tmp;
 
 	env_i = 0;
 	while (env_path[env_i])
@@ -393,7 +412,7 @@ void add_absolute_path_to_cmd_name_from_env_path(char ***cmd_absolute_path, char
 			free(cmd_absolute_path[0][cmd_i]);
 			cmd_absolute_path[0][cmd_i] = ft_strdup(tmp);
 			free(tmp);
-			break;
+			break ;
 		}
 		free(tmp);
 		env_i++;
@@ -401,34 +420,40 @@ void add_absolute_path_to_cmd_name_from_env_path(char ***cmd_absolute_path, char
 	check_cmd(env_path[env_i]);
 }
 
-void add_absolute_path_to_cmd_name(char ***cmd_absolute_path, char **env_path, char **envp)
+void	add_absolute_path_to_cmd_name(char ***cmd_absolute_path,
+		char **env_path, char **envp)
 {
-	int cmd_i;
+	int	cmd_i;
 
 	cmd_i = -1;
-	while(cmd_absolute_path[0][++cmd_i])
+	while (cmd_absolute_path[0][++cmd_i])
 	{
 		if (is_cmd_relative_path(cmd_absolute_path, cmd_i))
 		{
-			convert_relative_path_to_absolute_path(cmd_absolute_path, cmd_i, envp);
-			continue;
+			convert_relative_path_to_absolute_path(cmd_absolute_path, cmd_i,
+				envp);
+			continue ;
 		}
 		if (is_cmd_alreadly_absollute_path(cmd_absolute_path, cmd_i))
-			continue;
-		add_absolute_path_to_cmd_name_from_env_path(cmd_absolute_path, env_path, cmd_i);
+			continue ;
+		add_absolute_path_to_cmd_name_from_env_path(cmd_absolute_path, env_path,
+			cmd_i);
 	}
 }
 
-void get_cmd_absolute_path_with_option(int argc, char **argv, char ***cmd_option, t_data *data)
+void	get_cmd_absolute_path_with_option(int argc, char **argv,
+		char ***cmd_option, t_data *data)
 {
-	int cmd_i;
+	int	cmd_i;
 
-	data->cmd_absolute_path_with_option = (char **)malloc(sizeof(char *) * (get_cmd_count(argc, argv) + 1));
+	data->cmd_absolute_path_with_option = (char **)malloc(sizeof(char *)
+			* (get_cmd_count(argc, argv) + 1));
 	check_malloc(data->cmd_absolute_path_with_option);
 	cmd_i = 0;
-	while(data->cmd_absolute_path[cmd_i])
+	while (data->cmd_absolute_path[cmd_i])
 	{
-		data->cmd_absolute_path_with_option[cmd_i] = ft_strjoin(data->cmd_absolute_path[cmd_i], cmd_option[0][cmd_i]);
+		data->cmd_absolute_path_with_option[cmd_i] = ft_strjoin(data->cmd_absolute_path[cmd_i],
+				cmd_option[0][cmd_i]);
 		cmd_i++;
 	}
 	data->cmd_absolute_path_with_option[cmd_i] = NULL;
@@ -458,15 +483,15 @@ int	ft_strcmp(const char *s1, const char *s2)
 	return ((unsigned char)s1[i] - (unsigned char)s2[i]);
 }
 
-void proc_here_doc(char *limitter, int infile_fd)
+void	proc_here_doc(char *limitter, int infile_fd)
 {
-	char *line;
-	char *limitter_endl;
+	char	*line;
+	char	*limitter_endl;
 
 	line = get_next_line(STDIN_FILENO);
 	limitter_endl = ft_strjoin(limitter, "\n");
 	check_malloc(limitter_endl);
-	while(ft_strncmp(line, limitter_endl, ft_strlen(line)))
+	while (ft_strncmp(line, limitter_endl, ft_strlen(line)))
 	{
 		ft_putstr_fd(line, infile_fd);
 		free(line);
@@ -487,7 +512,7 @@ int	is_argv_valid(int argc, char **argv)
 	return TRUE;
 }
 
-void get_infile_fd(char **argv, int *infile_fd)
+void	get_infile_fd(char **argv, int *infile_fd)
 {
 	if (is_specified_here_doc(argv))
 	{
@@ -498,7 +523,7 @@ void get_infile_fd(char **argv, int *infile_fd)
 		*infile_fd = open_file(get_infile(argv), INFILE);
 }
 
-void get_outfile_fd(int argc, char **argv, int *outfile_fd)
+void	get_outfile_fd(int argc, char **argv, int *outfile_fd)
 {
 	if (is_specified_here_doc(argv))
 		*outfile_fd = open_file(get_outfile(argc, argv), OUTFILE_HERE_DOC);
@@ -506,7 +531,7 @@ void get_outfile_fd(int argc, char **argv, int *outfile_fd)
 		*outfile_fd = open_file(get_outfile(argc, argv), OUTFILE);
 }
 
-void check_arg(int argc, char **argv)
+void	check_arg(int argc, char **argv)
 {
 	if (is_argc_valid(argc, argv) == FALSE)
 		exit(1);
@@ -514,29 +539,30 @@ void check_arg(int argc, char **argv)
 		exit(1);
 }
 
-void check_pipe(int ret)
+void	check_pipe(int ret)
 {
-	if(ret < 0)
+	if (ret < 0)
 	{
 		put_error("failed to create pipe\n");
 		exit(1);
 	}
 }
 
-void get_pipe(t_data *data, int *cmd_i)
+void	get_pipe(t_data *data, int *cmd_i)
 {
-	int ret;
+	int	ret;
 
 	ret = pipe(data->pipe_fd[*cmd_i]);
 	check_pipe(ret);
 }
 
-void malloc_multiple_pipe(int argc, char **argv, t_data *data)
+void	malloc_multiple_pipe(int argc, char **argv, t_data *data)
 {
 	int	i;
 
 	i = 0;
-	data->pipe_fd = (int **)malloc(sizeof(int *) * (get_cmd_count(argc, argv) + 1));
+	data->pipe_fd = (int **)malloc(sizeof(int *) * (get_cmd_count(argc, argv)
+				+ 1));
 	check_malloc(data->pipe_fd);
 	while (i < get_cmd_count(argc, argv))
 	{
@@ -555,7 +581,7 @@ void	get_data(int argc, char **argv, char **envp, t_data *data)
 	malloc_multiple_pipe(argc, argv, data);
 }
 
-void set_input_fd(t_data *data, int *cmd_i)
+void	set_input_fd(t_data *data, int *cmd_i)
 {
 	if (*cmd_i == 0)
 	{
@@ -578,7 +604,7 @@ void set_input_fd(t_data *data, int *cmd_i)
 	}
 }
 
-void set_output_fd(t_data *data, int *cmd_i)
+void	set_output_fd(t_data *data, int *cmd_i)
 {
 	if (data->cmd_absolute_path[*cmd_i + 1] != NULL)
 	{
@@ -601,9 +627,9 @@ void set_output_fd(t_data *data, int *cmd_i)
 	}
 }
 
-void exec_child(char **envp, t_data *data, int *cmd_i)
+void	exec_child(char **envp, t_data *data, int *cmd_i)
 {
-	char **cmd;
+	char	**cmd;
 
 	cmd = ft_split(data->cmd_absolute_path_with_option[*cmd_i], ' ');
 	check_malloc(cmd);
@@ -612,7 +638,7 @@ void exec_child(char **envp, t_data *data, int *cmd_i)
 	execve(data->cmd_absolute_path[*cmd_i], cmd, envp);
 }
 
-void check_fork(pid_t child_pid)
+void	check_fork(pid_t child_pid)
 {
 	if (child_pid < 0)
 	{
@@ -621,7 +647,7 @@ void check_fork(pid_t child_pid)
 	}
 }
 
-void check_wait(int ret)
+void	check_wait(int ret)
 {
 	if (ret == -1)
 	{
@@ -630,13 +656,13 @@ void check_wait(int ret)
 	}
 }
 
-void wait_children(int *cmd_i)
+void	wait_children(int *cmd_i)
 {
-	int ret;
-	int i;
+	int	ret;
+	int	i;
 
 	i = 0;
-	while(i < *cmd_i)
+	while (i < *cmd_i)
 	{
 		ret = wait(NULL);
 		check_wait(ret);
@@ -644,15 +670,15 @@ void wait_children(int *cmd_i)
 	}
 }
 
-void create_child(t_data *data)
+void	create_child(t_data *data)
 {
 	data->child_pid = fork();
 	check_fork(data->child_pid);
 }
 
-void pipex(char **envp, t_data *data)
+void	pipex(char **envp, t_data *data)
 {
-	int cmd_i;
+	int	cmd_i;
 
 	cmd_i = 0;
 	while (data->cmd_absolute_path[cmd_i])
@@ -671,7 +697,7 @@ void pipex(char **envp, t_data *data)
 	wait_children(&cmd_i);
 }
 
-void end_pipex(char **argv, t_data *data)
+void	end_pipex(char **argv, t_data *data)
 {
 	all_free_tab(data->cmd_absolute_path);
 	all_free_tab(data->cmd_absolute_path_with_option);
@@ -685,7 +711,7 @@ void end_pipex(char **argv, t_data *data)
 
 int	main(int argc, char **argv, char **envp)
 {
-	t_data data;
+	t_data	data;
 
 	check_arg(argc, argv);
 	get_data(argc, argv, envp, &data);
