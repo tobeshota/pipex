@@ -2,7 +2,7 @@
  <img width="480" alt="so_long" src="https://github.com/tobeshota/pipex/assets/103044771/91b4ae97-c39e-4551-8375-68b7c15cfe4c">
 </p>
 
-**Pipe is one of the [42](https://42tokyo.jp/) projects.**  
+**Pipex is one of the [42](https://42tokyo.jp/) projects.**  
 **It is a reimplementation of pipes.**
 
 ---
@@ -27,6 +27,7 @@ make
 ```
 
 ### Execute
+#### Handle multiple pipes
 This:
 ```
 ./pipex infile cmd1 cmd2 ... cmdn outfile
@@ -35,7 +36,7 @@ behaves like:
 ```
 < infile cmd1 | cmd2 ... | cmdn > outfile
 ```
-
+#### Handle heredoc
 This:
 ```
 ./pipex here_doc LIMITTER cmd1 cmd2 ... cmdn outfile
