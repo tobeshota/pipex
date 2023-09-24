@@ -1,5 +1,5 @@
 <p align="center">
- <img width="300" alt="so_long" src="https://github.com/tobeshota/pipex/assets/103044771/91b4ae97-c39e-4551-8375-68b7c15cfe4c">
+ <img width="350" alt="so_long" src="https://github.com/tobeshota/pipex/assets/103044771/91b4ae97-c39e-4551-8375-68b7c15cfe4c">
 </p>
 
 **Pipex is one of the [42](https://42tokyo.jp/) projects.**  
