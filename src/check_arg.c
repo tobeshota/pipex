@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/24 12:14:49 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/24 13:03:27 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/24 15:27:34 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,16 +42,16 @@ static int	is_outfile_valid(char *infile, char *outfile)
 
 static int	is_argc_valid(int argc, char **argv)
 {
+	if (argc > 1 && is_specified_here_doc(argv) && argc < 6)
+	{
+		put_error("argc at least 6 as follows:\n\
+./pipex here_doc LIMITTER cmd1 cmd2 outfile\n");
+		return (FALSE);
+	}
 	if (argc < 5)
 	{
 		put_error("argc at least 5 as follows:\n\
 ./pipex infile cmd1 cmd2 outfile\n");
-		return (FALSE);
-	}
-	if (is_specified_here_doc(argv) && argc < 6)
-	{
-		put_error("argc at least 6 as follows:\n\
-./pipex here_doc LIMITTER cmd1 cmd2 outfile\n");
 		return (FALSE);
 	}
 	return (TRUE);
