@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/24 12:14:49 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/25 14:03:11 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/25 14:13:31 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,7 @@ static void	set_input_fd(t_data *data, int cmd_i)
 			put_error("failed to dup\n");
 			exit(1);
 		}
-		close_fd(data->pipe_fd[cmd_i - 1][0]);
-		close_fd(data->pipe_fd[cmd_i - 1][1]);
+		close_pipe(data->pipe_fd[cmd_i - 1]);
 	}
 }
 
@@ -58,8 +57,7 @@ static void	set_output_fd(t_data *data, int cmd_i)
 			put_error("failed to dup\n");
 			exit(1);
 		}
-		close_fd(data->pipe_fd[cmd_i][0]);
-		close_fd(data->pipe_fd[cmd_i][1]);
+		close_pipe(data->pipe_fd[cmd_i]);
 	}
 	else
 	{
@@ -97,10 +95,7 @@ void	pipex(char **envp, t_data *data)
 		if (child_pid == 0)
 			exec_child(envp, data, cmd_i);
 		if (cmd_i > 0)
-		{
-			close_fd(data->pipe_fd[cmd_i - 1][0]);
-			close_fd(data->pipe_fd[cmd_i - 1][1]);
-		}
+			close_pipe(data->pipe_fd[cmd_i - 1]);
 		cmd_i++;
 	}
 	wait_children(cmd_i);

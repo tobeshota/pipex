@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/24 12:14:49 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/25 13:46:12 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/25 14:11:37 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,12 @@ void	close_fd(int fd)
 
 	ret = close(fd);
 	check_close(ret);
+}
+
+void	close_pipe(int *pipe_fd)
+{
+	close_fd(pipe_fd[0]);
+	close_fd(pipe_fd[1]);
 }
 
 void	add_slash_eos(char ***path)

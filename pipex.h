@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 09:29:26 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/25 14:02:56 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/25 14:11:37 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ typedef struct s_data
 
 int			open_file(char *file, int file_type);
 void		close_fd(int fd);
+void		close_pipe(int *pipe_fd);
 void		add_slash_eos(char ***path);
 void		all_free_tab(char **ptr);
 void		put_error(char *err_msg);
