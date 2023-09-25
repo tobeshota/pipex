@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/24 12:14:49 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/25 02:16:35 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/25 14:32:31 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ static int	is_infile_valid(char *infile)
 		fd = open_file(HERE_DOC_FILE_PATH, INFILE_HERE_DOC);
 	else
 		fd = open_file(infile, INFILE);
-	close_fd(fd);
+	check_close(close(fd));
 	if (fd == -1)
 		return (FALSE);
 	return (TRUE);
@@ -34,7 +34,7 @@ static int	is_outfile_valid(char *infile, char *outfile)
 		fd = open_file(outfile, OUTFILE_HERE_DOC);
 	else
 		fd = open_file(outfile, OUTFILE);
-	close_fd(fd);
+	check_close(close(fd));
 	if (fd == -1)
 		return (FALSE);
 	return (TRUE);

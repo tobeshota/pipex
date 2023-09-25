@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/24 12:14:49 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/25 14:24:34 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/25 14:37:27 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ static void	set_input_fd(t_data *data, int cmd_i)
 	if (cmd_i == 0)
 	{
 		check_dup(dup2(data->infile_fd, STDIN_FILENO));
-		close_fd(data->infile_fd);
+		check_close(close(data->infile_fd));
 	}
 	else
 	{
@@ -48,7 +48,7 @@ static void	set_output_fd(t_data *data, int cmd_i)
 	else
 	{
 		check_dup(dup2(data->outfile_fd, STDOUT_FILENO));
-		close_fd(data->outfile_fd);
+		check_close(close(data->outfile_fd));
 	}
 }
 

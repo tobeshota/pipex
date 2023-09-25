@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   here_doc.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: toshota <toshota@student.42.fr>            +#+  +:+       +#+        */
+/*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/24 12:14:49 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/24 16:19:41 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/25 14:33:01 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,6 @@ void	proc_here_doc(char *limitter, int infile_fd)
 	}
 	free(line);
 	free(limitter_endl);
-	close_fd(infile_fd);
+	check_close(close(infile_fd));
 	infile_fd = open_file(HERE_DOC_FILE_PATH, INFILE_HERE_DOC);
 }
