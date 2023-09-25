@@ -6,11 +6,30 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/24 12:51:21 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/24 12:54:18 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/25 13:34:18 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../pipex.h"
+
+int	get_cmd_count(int argc, char **argv)
+{
+	int	cmd_count;
+	int	i;
+
+	cmd_count = 0;
+	if (is_specified_here_doc(argv))
+		i = 3;
+	else
+		i = 2;
+	while (i < argc - 1)
+	{
+		if (is_cmd(argv[i]))
+			cmd_count++;
+		i++;
+	}
+	return (cmd_count);
+}
 
 static void	get_infile_fd(char **argv, int *infile_fd)
 {

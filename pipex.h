@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 09:29:26 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/25 02:02:18 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/25 13:33:36 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ void		check_fork(pid_t child_pid);
 void		check_close(int ret);
 void		check_wait(int ret);
 int			get_cmd_count(int argc, char **argv);
+int			is_cmd(char *str);
 void		get_cmd_option(int argc, char **argv, char ***cmd_absolute_path,
 				char ***cmd_option);
 void		get_cmd_absolute_path(int argc, char **argv, char **envp,

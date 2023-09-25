@@ -6,29 +6,15 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/24 12:14:49 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/24 13:01:02 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/25 13:38:56 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../pipex.h"
 
-int	get_cmd_count(int argc, char **argv)
+int	is_cmd(char *str)
 {
-	int	cmd_count;
-	int	i;
-
-	cmd_count = 0;
-	if (is_specified_here_doc(argv))
-		i = 3;
-	else
-		i = 2;
-	while (i < argc - 1)
-	{
-		if (!access(argv[i], X_OK) || access(argv[i], F_OK))
-			cmd_count++;
-		i++;
-	}
-	return (cmd_count);
+	return (!access(str, X_OK) || access(str, F_OK));
 }
 
 static void	get_cmd_name_from_arg(int argc, char **argv,
@@ -47,7 +33,7 @@ static void	get_cmd_name_from_arg(int argc, char **argv,
 	cmd_i = 0;
 	while (arg_i < argc - 1)
 	{
-		if (!access(argv[arg_i], X_OK) || access(argv[arg_i], F_OK))
+		if (is_cmd(argv[arg_i]))
 		{
 			cmd_absolute_path[0][cmd_i] = ft_substr(argv[arg_i], 0,
 					strlen_until_c(argv[arg_i], ' '));
@@ -75,7 +61,7 @@ void	get_cmd_option(int argc, char **argv, char ***cmd_absolute_path,
 	cmd_i = 0;
 	while (arg_i < argc - 1)
 	{
-		if (!access(argv[arg_i], X_OK) || access(argv[arg_i], F_OK))
+		if (is_cmd(argv[arg_i]))
 		{
 			cmd_option[0][cmd_i] = ft_substr(argv[arg_i],
 					ft_strlen(cmd_absolute_path[0][cmd_i]),
@@ -99,9 +85,9 @@ static void	get_cmd_absolute_path_with_option(int argc, char **argv,
 	cmd_i = 0;
 	while (data->cmd_absolute_path[cmd_i])
 	{
-		data->cmd_absolute_path_with_option[cmd_i] = \
-		ft_strjoin(data->cmd_absolute_path[cmd_i],
-				cmd_option[0][cmd_i]);
+		data->cmd_absolute_path_with_option[cmd_i] \
+		= ft_strjoin(data->cmd_absolute_path[cmd_i],
+			cmd_option[0][cmd_i]);
 		cmd_i++;
 	}
 	data->cmd_absolute_path_with_option[cmd_i] = NULL;
