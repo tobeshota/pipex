@@ -3,14 +3,23 @@
 /*                                                        :::      ::::::::   */
 /*   utils2.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: toshota <toshota@student.42.fr>            +#+  +:+       +#+        */
+/*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/24 12:14:49 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/24 16:47:11 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/25 13:46:12 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../pipex.h"
+
+void	check_malloc(void *ptr)
+{
+	if (ptr == NULL)
+	{
+		put_error("failed to malloc\n");
+		exit(1);
+	}
+}
 
 int	open_file(char *file, int file_type)
 {
@@ -29,11 +38,7 @@ int	open_file(char *file, int file_type)
 				S_IRWXU | S_IRWXG | S_IRWXO);
 	else
 		fd = -1;
-	if (fd == -1)
-	{
-		put_error("unable to open file\n");
-		exit(1);
-	}
+	check_open(fd);
 	return (fd);
 }
 

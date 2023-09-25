@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 09:29:26 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/25 13:33:36 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/25 13:50:06 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,9 +43,10 @@ void		put_error(char *err_msg);
 char		*ft_strrnchr(const char *s, int c, int n);
 size_t		strlen_until_c(char *str, char c);
 void		check_malloc(void *ptr);
+void		check_open(int ret);
+void		check_close(int ret);
 void		check_pipe(int ret);
 void		check_fork(pid_t child_pid);
-void		check_close(int ret);
 void		check_wait(int ret);
 int			get_cmd_count(int argc, char **argv);
 int			is_cmd(char *str);
