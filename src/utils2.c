@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/24 12:14:49 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/25 14:11:37 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/25 14:25:38 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,10 +44,7 @@ int	open_file(char *file, int file_type)
 
 void	close_fd(int fd)
 {
-	int	ret;
-
-	ret = close(fd);
-	check_close(ret);
+	check_close(close(fd));
 }
 
 void	close_pipe(int *pipe_fd)

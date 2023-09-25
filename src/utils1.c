@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/24 12:14:49 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/24 12:55:32 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/25 14:22:03 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,15 @@ void	all_free_tab(char **ptr)
 	}
 	free(ptr);
 	ptr = NULL;
+}
+
+void	check_dup(int ret)
+{
+	if (ret == -1)
+	{
+		put_error("failed to dup\n");
+		exit(1);
+	}
 }
 
 void	put_error(char *err_msg)

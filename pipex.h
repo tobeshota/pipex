@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 09:29:26 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/25 14:11:37 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/25 14:22:14 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,7 @@ void		check_open(int ret);
 void		check_close(int ret);
 void		check_pipe(int ret);
 void		check_fork(pid_t child_pid);
+void		check_dup(int ret);
 void		check_wait(int ret);
 int			get_cmd_count(int argc, char **argv);
 int			is_cmd(char *str);

@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/24 12:14:49 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/25 14:13:31 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/25 14:24:34 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,14 +14,12 @@
 
 static void	wait_children(int cmd_i)
 {
-	int	ret;
 	int	i;
 
 	i = 0;
 	while (i < cmd_i)
 	{
-		ret = wait(NULL);
-		check_wait(ret);
+		check_wait(wait(NULL));
 		i++;
 	}
 }
@@ -30,20 +28,12 @@ static void	set_input_fd(t_data *data, int cmd_i)
 {
 	if (cmd_i == 0)
 	{
-		if (dup2(data->infile_fd, STDIN_FILENO) == -1)
-		{
-			put_error("failed to dup\n");
-			exit(1);
-		}
+		check_dup(dup2(data->infile_fd, STDIN_FILENO));
 		close_fd(data->infile_fd);
 	}
 	else
 	{
-		if (dup2(data->pipe_fd[cmd_i - 1][0], STDIN_FILENO) == -1)
-		{
-			put_error("failed to dup\n");
-			exit(1);
-		}
+		check_dup(dup2(data->pipe_fd[cmd_i - 1][0], STDIN_FILENO));
 		close_pipe(data->pipe_fd[cmd_i - 1]);
 	}
 }
@@ -52,20 +42,12 @@ static void	set_output_fd(t_data *data, int cmd_i)
 {
 	if (data->cmd_absolute_path[cmd_i + 1] != NULL)
 	{
-		if (dup2(data->pipe_fd[cmd_i][1], STDOUT_FILENO) == -1)
-		{
-			put_error("failed to dup\n");
-			exit(1);
-		}
+		check_dup(dup2(data->pipe_fd[cmd_i][1], STDOUT_FILENO));
 		close_pipe(data->pipe_fd[cmd_i]);
 	}
 	else
 	{
-		if (dup2(data->outfile_fd, STDOUT_FILENO) == -1)
-		{
-			put_error("failed to dup\n");
-			exit(1);
-		}
+		check_dup(dup2(data->outfile_fd, STDOUT_FILENO));
 		close_fd(data->outfile_fd);
 	}
 }
