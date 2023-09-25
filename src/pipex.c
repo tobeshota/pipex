@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/24 12:14:49 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/25 02:03:38 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/25 14:03:11 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,15 +85,16 @@ static void	exec_child(char **envp, t_data *data, int cmd_i)
 
 void	pipex(char **envp, t_data *data)
 {
-	int	cmd_i;
+	int		cmd_i;
+	pid_t	child_pid;
 
 	cmd_i = 0;
 	while (data->cmd_absolute_path[cmd_i])
 	{
 		get_pipe(data, cmd_i);
-		data->child_pid = fork();
-		check_fork(data->child_pid);
-		if (data->child_pid == 0)
+		child_pid = fork();
+		check_fork(child_pid);
+		if (child_pid == 0)
 			exec_child(envp, data, cmd_i);
 		if (cmd_i > 0)
 		{

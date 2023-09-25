@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 09:29:26 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/25 13:50:06 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/25 14:02:56 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@
 
 typedef struct s_data
 {
-	pid_t	child_pid;
 	int		infile_fd;
 	int		outfile_fd;
 	char	**cmd_absolute_path;
