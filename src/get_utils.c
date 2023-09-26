@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/24 12:14:49 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/25 02:02:09 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/26 11:09:57 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,7 @@ void	get_env_path(char ***env_path, char **envp)
 	i = 0;
 	while (envp[i] && ft_strncmp(envp[i], "PATH=", ft_strlen("PATH=")))
 		i++;
-	if (envp[i] == NULL)
-	{
-		put_error("PATH not found\n");
-		exit(1);
-	}
+	check_is_path_found(envp[i]);
 	*env_path = ft_split(envp[i] + ft_strlen("PATH="), ':');
 	check_malloc(env_path);
 	add_slash_eos(env_path);
@@ -36,8 +32,7 @@ void	get_pwd(char ***pwd_path, char **envp)
 	i = 0;
 	while (envp[i] && ft_strncmp(envp[i], "PWD=", ft_strlen("PWD=")))
 		i++;
-	if (envp[i] == NULL)
-		put_error("PATH not found\n");
+	check_is_path_found(envp[i]);
 	*pwd_path = ft_split(envp[i] + ft_strlen("PWD="), ':');
 	check_malloc(pwd_path);
 	add_slash_eos(pwd_path);

@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/24 12:14:49 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/26 10:04:58 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/26 11:06:41 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,5 +51,14 @@ void	add_slash_eos(char ***path)
 		path[0][i] = ft_strjoin(path[0][i], "/");
 		free(tmp);
 		i++;
+	}
+}
+
+void	check_is_path_found(char *path)
+{
+	if (path == NULL)
+	{
+		put_error("PATH not found\n");
+		exit(1);
 	}
 }

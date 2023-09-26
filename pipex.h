@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 09:29:26 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/26 10:06:39 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/26 11:06:54 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,7 @@ void		check_execve(int ret);
 void		check_wait(int ret);
 void		check_unlink(int ret);
 void		check_arg(int argc, char **argv);
+void		check_is_path_found(char *path);
 int			get_cmd_count(int argc, char **argv);
 int			is_cmd(char *str);
 void		get_cmd_option(int argc, char **argv, char ***cmd_absolute_path,
