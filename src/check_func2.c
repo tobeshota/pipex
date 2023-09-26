@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/26 10:03:29 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/26 10:07:24 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/26 11:32:15 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ void	check_execve(int ret)
 {
 	if (ret == -1)
 	{
-		put_error("failed to unlink\n");
+		put_error("failed to execve\n");
 		exit(1);
 	}
 }
