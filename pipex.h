@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/17 09:29:26 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/25 14:35:25 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/26 10:06:39 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,10 @@ void		check_close(int ret);
 void		check_pipe(int ret);
 void		check_fork(pid_t child_pid);
 void		check_dup(int ret);
+void		check_execve(int ret);
 void		check_wait(int ret);
+void		check_unlink(int ret);
+void		check_arg(int argc, char **argv);
 int			get_cmd_count(int argc, char **argv);
 int			is_cmd(char *str);
 void		get_cmd_option(int argc, char **argv, char ***cmd_absolute_path,
@@ -64,7 +67,6 @@ char		*get_pwd_for_relative_path(char ***pwd_path,
 void		get_pipe(t_data *data, int cmd_i);
 char		*get_infile(char **argv);
 char		*get_outfile(int argc, char **argv);
-void		check_arg(int argc, char **argv);
 int			is_specified_here_doc(char **argv);
 void		proc_here_doc(char *limitter, int infile_fd);
 int			is_cmd_relative_path(char ***cmd_absolute_path, int cmd_i);

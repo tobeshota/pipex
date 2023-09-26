@@ -1,16 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   check_func_is_worked.c                             :+:      :+:    :+:   */
+/*   check_func1.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/24 12:14:49 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/25 13:49:54 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/26 10:05:15 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../pipex.h"
+
+void	check_malloc(void *ptr)
+{
+	if (ptr == NULL)
+	{
+		put_error("failed to malloc\n");
+		exit(1);
+	}
+}
 
 void	check_open(int fd)
 {
@@ -44,15 +53,6 @@ void	check_fork(pid_t child_pid)
 	if (child_pid < 0)
 	{
 		put_error("failed to fork\n");
-		exit(1);
-	}
-}
-
-void	check_wait(int ret)
-{
-	if (ret == -1)
-	{
-		put_error("failed to wait\n");
 		exit(1);
 	}
 }

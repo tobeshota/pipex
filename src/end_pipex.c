@@ -6,7 +6,7 @@
 /*   By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/24 12:54:49 by toshota           #+#    #+#             */
-/*   Updated: 2023/09/25 19:22:33 by toshota          ###   ########.fr       */
+/*   Updated: 2023/09/26 10:04:08 by toshota          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,5 +33,5 @@ void	end_pipex(char **argv, t_data *data)
 	all_free_tab(data->cmd_absolute_path_with_option);
 	all_free_int(data->pipe_fd);
 	if (is_specified_here_doc(argv))
-		unlink(HERE_DOC_FILE_PATH);
+		check_unlink(unlink(HERE_DOC_FILE_PATH));
 }
