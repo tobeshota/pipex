@@ -8,7 +8,7 @@
 ---
 
 # Description
-A pipe is a mechanism for connecting IO between processes.   
+A pipe is a mechanism for connecting I/O between processes.   
 By reimplementing pipes, you can deepen your understanding of redirection and pipes.
 
 # Usage
