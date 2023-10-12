@@ -6,7 +6,7 @@
 #    By: toshota <toshota@student.42tokyo.jp>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/05/26 19:52:48 by toshota           #+#    #+#              #
-#    Updated: 2023/09/26 10:02:19 by toshota          ###   ########.fr        #
+#    Updated: 2023/10/12 20:42:49 by toshota          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,7 +15,6 @@ CC				=	cc
 CFLAGS			=	-Wall -Wextra -Werror
 AR				=	ar rc
 RM				=	rm -f
-INCS			=	pipex.h
 LIBFT_DIR		=	libft/
 
 SRCS_DIR		=	src/
@@ -32,7 +31,7 @@ OBJS			=	$(SRCS:.c=.o)
 
 all:		$(NAME)
 
-$(NAME):	$(OBJS) $(INCS) Makefile
+$(NAME):	$(OBJS) Makefile
 	@ make -C $(LIBFT_DIR)
 	@ $(CC) $(CFLAGS) $(LIBFT_DIR)libft.a $(OBJS) -o $(NAME)
 	@ echo "compile to create an executable file: ./pipex"
@@ -40,7 +39,7 @@ $(NAME):	$(OBJS) $(INCS) Makefile
 bonus:		all
 
 .c.o:		$(OBJS)
-	@ $(CC) $(CFLAGS) -I $(INCS) -c $< -o $@
+	@ $(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	@ make clean -C $(LIBFT_DIR)
